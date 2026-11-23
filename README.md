@@ -2,6 +2,8 @@
 
 A single-page dashboard for Bodies by Ryan. It is one HTML file with no build step and no dependencies.
 
+Live site: https://bbr-dashboard-nu.vercel.app (Vercel project `bbr-dashboard` on the D2E team; every push to `main` redeploys).
+
 Until a `data.json` file is added, the page shows **sample data** (marked with a yellow "Sample data, not live" badge).
 
 ## Tabs
