@@ -331,12 +331,6 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
   </div>
   <section id="view"></section>
 </main>
-<footer>
-  <div class="row">
-    <span id="footNote"></span>
-    <span class="spacer"></span>
-  </div>
-</footer>
 <div class="tip" id="tip" role="tooltip"></div>
 
 <div class="login-screen hidden" id="login">
@@ -1830,7 +1824,6 @@ function startSession(user) {
   $("#userChip").textContent = `${user.name} · ${user.role === "admin" ? "Admin" : "Outreach"}`;
   $("#accountSel").classList.toggle("hidden", !isAdmin());
   document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin()));
-  $("#footNote").textContent = isAdmin() ? "Admin view: all tabs." : "Outreach view: Sales tab only.";
   if (!isAdmin()) { state.account = "all"; $("#accountSel").value = "all"; }
   const h = location.hash.slice(1); state.tab = TABS.find(t => t.id === h) ? h : "overview";
   if (user.role === "admin" && nextMeeting().status !== "later") state.tab = "overview";   // Monday morning: open on the meeting
