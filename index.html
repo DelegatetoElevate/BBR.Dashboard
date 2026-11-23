@@ -255,6 +255,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--m
 .menu button:hover, .menu button:focus-visible { background: var(--wash); }
 .menu .mhint { font-size: 11.5px; color: var(--muted); padding: 4px 10px 6px; }
 .user-chip { font-size: 12.5px; color: var(--ink-2); }
+.user-pill { font-size: 12.5px; padding: 4px 12px; white-space: nowrap; }
+.user-pill:empty { display: none; }
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60; display: grid; place-items: center; padding: 16px; }
 .login-screen { position: fixed; inset: 0; background: var(--page); z-index: 70; display: grid; place-items: center; padding: 16px; }
 .dialog { background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 20px 22px; width: min(560px, 100%); max-height: 90vh; overflow: auto; }
@@ -290,11 +292,9 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
       <span class="logo" role="img" aria-label="BBR"></span>
       <div class="titles"><h1>Bodies by Ryan · Dashboard</h1><div class="meta">
       <span class="sub" id="asOf"></span>
-      <span class="badge sample hidden" id="sampleBadge" title="Replace with live data by adding data.json">Sample data, not live</span>
-      <span class="badge sample" title="Access codes are checked in this browser only. Set up real logins before adding real member data.">Access code · not secure</span>
       </div></div>
       <span class="spacer"></span>
-      <span class="user-chip" id="userChip"></span>
+      <span class="badge sample user-pill" id="userChip"></span>
       <div class="menu-wrap">
         <button class="pill" id="exportBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export ▾</button>
         <div class="menu hidden" id="exportMenu" role="menu">
@@ -1867,7 +1867,6 @@ async function init() {
   } catch { DATA = buildSample(); }
   DATA.goals = DATA.goals || { monthlyRevenue: {} };
   ["offers", "payments", "slackPosts", "members", "fees", "adSpend", "funnel", "leads", "calls", "signups", "changes", "notes"].forEach(k => DATA[k] = DATA[k] || []);
-  $("#sampleBadge").classList.toggle("hidden", !DATA.meta?.sample);
   $("#asOf").textContent = "Data as of " + new Date(DATA.meta?.generatedAt || Date.now()).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
   $("#accountSel").innerHTML += ACCOUNTS.map(a => `<option value="${a.id}">${a.name}</option>`).join("");
   const user = currentUser();
