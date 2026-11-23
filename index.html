@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>BBR Dashboard</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --card: #ffffff;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --wash: rgba(11,11,11,0.04);
+  --accent: #2a78d6;
+  --s-online: #2a78d6;
+  --s-claremont: #eb6834;
+  --s-jolimont: #1baf7a;
+  --good: #0ca30c;
+  --good-text: #006300;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --bad-text: #b32d2d;
+  --funnel-1: #1c5cab;
+  --funnel-2: #2a78d6;
+  --funnel-3: #5598e7;
+  --funnel-4: #86b6ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --card: #1a1a19;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835;
+    --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
+    --accent: #3987e5; --s-online: #3987e5; --s-claremont: #d95926; --s-jolimont: #199e70;
+    --good-text: #0ca30c; --bad-text: #e66767;
+    --funnel-1: #86b6ef; --funnel-2: #5598e7; --funnel-3: #3987e5; --funnel-4: #256abf;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --card: #1a1a19;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
+  --accent: #3987e5; --s-online: #3987e5; --s-claremont: #d95926; --s-jolimont: #199e70;
+  --good-text: #0ca30c; --bad-text: #e66767;
+  --funnel-1: #86b6ef; --funnel-2: #5598e7; --funnel-3: #3987e5; --funnel-4: #256abf;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page); color: var(--ink); font-size: 14px; line-height: 1.45;
+}
+button, input, select { font: inherit; color: inherit; }
+header.top {
+  position: sticky; top: 0; z-index: 10; background: var(--page);
+  border-bottom: 1px solid var(--border);
+}
+.top-inner { max-width: 1280px; margin: 0 auto; padding: 14px 24px 0; }
+.title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.title-row h1 { font-size: 17px; margin: 0; font-weight: 600; letter-spacing: 0.01em; }
+.title-row .sub { color: var(--ink-2); font-size: 12.5px; }
+.titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.titles .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.titles .badge { font-size: 11.5px; padding: 1px 8px; }
+.spacer { flex: 1; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+  padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2);
+}
+.badge.sample { background: rgba(250,178,25,0.16); color: var(--ink); border-color: rgba(250,178,25,0.5); }
+nav.tabs { display: flex; gap: 2px; margin-top: 12px; overflow-x: auto; }
+nav.tabs button {
+  border: 0; background: none; padding: 10px 14px; cursor: pointer; color: var(--ink-2);
+  border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500;
+}
+nav.tabs button:hover { color: var(--ink); background: var(--wash); }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 60px; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.filters label { font-size: 12px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: 0; overflow: hidden; background: var(--card); }
+.seg button { border: 0; background: none; padding: 6px 12px; cursor: pointer; color: var(--ink-2); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--page); font-weight: 500; }
+select, input[type="text"], input[type="number"], input[type="date"], input[type="search"] {
+  background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 6px 10px; min-height: 34px;
+}
+/* Buttons follow bodiesbyryan.com.au: square, black, small uppercase labels */
+.btn {
+  border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 0; padding: 8px 16px; cursor: pointer;
+  font-size: 12.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; transition: background .15s, color .15s;
+}
+.btn:hover { background: var(--ink); color: var(--page); }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--page); }
+.btn.primary:hover { background: transparent; color: var(--ink); }
+.btn:focus-visible, .pill:focus-visible, .seg button:focus-visible, nav.tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.grid { display: grid; gap: 14px; }
+.g-tiles { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.g-2 { grid-template-columns: 2fr 1fr; }
+.g-2e { grid-template-columns: 1fr 1fr; }
+@media (max-width: 900px) { .g-2, .g-2e { grid-template-columns: 1fr; } }
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 18px 20px; min-width: 0;
+}
+.card h2 { font-size: 14px; margin: 0 0 2px; font-weight: 600; }
+.card .hint { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+.section-gap { height: 14px; }
+.tile .label { color: var(--ink-2); font-size: 12.5px; }
+.tile .value { font-size: 26px; font-weight: 600; margin: 4px 0 2px; }
+.tile .delta { font-size: 12.5px; color: var(--ink-2); }
+.hero .value { font-size: 48px; line-height: 1.05; }
+.up { color: var(--good-text); }
+.down { color: var(--bad-text); }
+.meter { height: 8px; border-radius: 999px; background: var(--grid); overflow: hidden; margin-top: 8px; }
+.meter > span { display: block; height: 100%; border-radius: 999px; background: var(--ink); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:hover { background: var(--wash); }
+.table-wrap { overflow-x: auto; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 8px;
+  border-radius: 999px; border: 1px solid var(--border); white-space: nowrap;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+/* Notification colours: payments red, Slack magenta, transfers green, upcoming blue, offers amber */
+:root { --n-payment: #d03b3b; --n-slack: #d1338a; --n-transfer: #12935a; --n-upcoming: #2a78d6; --n-offer: #d99a06; --n-change: #6b4fd1; }
+:root[data-theme="dark"] { --n-payment: #e66767; --n-slack: #e45aa8; --n-transfer: #2fb877; --n-upcoming: #3f8fe8; --n-offer: #f0b429; --n-change: #9d86f0; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) { --n-payment: #e66767; --n-slack: #e45aa8; --n-transfer: #2fb877; --n-upcoming: #3f8fe8; --n-offer: #f0b429; --n-change: #9d86f0; } }
+.notif {
+  --nc: var(--accent); display: flex; gap: 12px; padding: 12px 14px; margin-bottom: 10px;
+  border-left: 3px solid var(--nc); background: color-mix(in srgb, var(--nc) 7%, transparent);
+}
+.notif:last-child { margin-bottom: 0; }
+.notif.n-payment { --nc: var(--n-payment); } .notif.n-slack { --nc: var(--n-slack); } .notif.n-transfer { --nc: var(--n-transfer); }
+.notif.n-upcoming { --nc: var(--n-upcoming); } .notif.n-offer { --nc: var(--n-offer); } .notif.n-change { --nc: var(--n-change); }
+.type-chip { display: inline-block; font-size: 11.5px; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
+.type-termination { color: var(--n-payment); } .type-freeze { color: var(--n-upcoming); } .type-pause { color: var(--n-change); }
+.month-row td { background: var(--wash); font-weight: 600; font-size: 12px; color: var(--ink-2); }
+.notif .ico { background: var(--nc) !important; }
+.notif.n-offer .ico { color: #0b0b0b; }
+.n-head, .n-item { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; text-decoration: none; }
+.n-head { font-weight: 600; font-size: 13px; display: inline-flex; gap: 6px; align-items: baseline; }
+.n-head:hover { color: var(--nc); }
+.n-item { display: flex; gap: 6px; width: 100%; color: var(--ink-2); font-size: 12.5px; padding: 3px 0; }
+.n-item .go { margin-left: auto; color: var(--nc); flex: none; }
+.n-item:hover { color: var(--ink); } .n-item:hover .txt { text-decoration: underline; text-decoration-color: var(--nc); }
+.n-head:focus-visible, .n-item:focus-visible, .ig:focus-visible { outline: 2px solid var(--nc, var(--ink)); outline-offset: 2px; }
+.ig { color: var(--ink); text-decoration: underline; text-decoration-color: var(--n-slack); text-underline-offset: 3px; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.flash { animation: flash 1.8s ease-out; }
+/* Clients */
+.client-link { font: inherit; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; font-weight: 500; text-align: left; text-decoration: underline; text-decoration-color: var(--axis); text-underline-offset: 3px; }
+.client-link:hover { text-decoration-color: var(--ink); }
+.client-link:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+tr.client-row { cursor: pointer; }
+.dialog.wide { width: min(900px, 100%); }
+.client-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--grid); }
+.kv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 20px; padding: 14px 0; }
+.kv .k { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.kv .v { font-size: 13.5px; margin-top: 2px; }
+.sub-h { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 18px 0 8px; padding-top: 14px; border-top: 1px solid var(--grid); }
+.note { border-left: 2px solid var(--ink); padding: 8px 12px; margin-top: 10px; background: var(--wash); }
+.note-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-2); flex-wrap: wrap; }
+.note-kind { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid currentColor; border-radius: 999px; padding: 0 7px; }
+.note-text { font-size: 13.5px; margin-top: 4px; white-space: normal; overflow-wrap: anywhere; }
+/* Monday meeting banner */
+.meeting { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 16px; border: 1px solid var(--ink); background: var(--card); }
+.meeting .m-ico { width: 40px; height: 40px; border: 1px solid currentColor; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.meeting .m-body { flex: 1; min-width: 220px; }
+.meeting .m-title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.meeting .m-when { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.meeting .m-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border: 1px solid currentColor; border-radius: 999px; }
+.meeting.today, .meeting.live { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.meeting.today .m-when, .meeting.live .m-when { color: color-mix(in srgb, var(--page) 78%, transparent); }
+.meeting.today .btn.primary, .meeting.live .btn.primary { background: var(--page); color: var(--ink); border-color: var(--page); }
+.meeting.today .btn.primary:hover, .meeting.live .btn.primary:hover { background: transparent; color: var(--page); }
+.meeting .btn.primary { padding: 12px 20px; text-decoration: none; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+.card { scroll-margin-top: 140px; }
+@keyframes flash { 0%, 30% { box-shadow: 0 0 0 3px var(--ink); } 100% { box-shadow: 0 0 0 3px transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; outline: 3px solid var(--ink); } }
+.notif .ico {
+  width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; flex: none; color: #fff;
+}
+.notif .t { font-weight: 600; font-size: 13px; }
+.notif .d { color: var(--ink-2); font-size: 12.5px; }
+.count { color: var(--muted); font-weight: 500; }
+.toggle { position: relative; display: inline-block; vertical-align: middle; width: 36px; height: 20px; flex: none; }
+.toggle input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; inset: 0; cursor: pointer; z-index: 1; }
+.toggle span {
+  position: absolute; inset: 0; border-radius: 999px; background: transparent; border: 1px solid var(--muted); transition: background .15s, border-color .15s; pointer-events: none;
+}
+.toggle span::after {
+  content: ""; position: absolute; top: 50%; left: 3px; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s;
+}
+.toggle input:checked + span { background: var(--ink); border-color: var(--ink); }
+.toggle input:checked + span::after { transform: translateX(16px); background: var(--page); }
+.toggle input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+td.toggle-cell { width: 64px; text-align: center; }
+td.toggle-cell .toggle { margin: 0 auto; }
+@media (prefers-reduced-motion: reduce) { .toggle span, .toggle span::after { transition: none; } }
+.warn-text { color: var(--bad-text); font-size: 12px; }
+.muted { color: var(--muted); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.tip {
+  position: fixed; pointer-events: none; z-index: 50; background: var(--card); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: none; max-width: 260px;
+}
+.tip .tr { display: flex; justify-content: space-between; gap: 14px; }
+.tip .tr span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+details.tv summary { cursor: pointer; color: var(--ink-2); font-size: 12.5px; margin-top: 8px; }
+.empty { color: var(--muted); padding: 18px 0; text-align: center; }
+footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--muted); font-size: 12px; }
+.hidden { display: none !important; }
+/* Pill = the site's round outlined icon buttons; primary = its black call-to-action */
+.pill {
+  border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 16px;
+  cursor: pointer; font-size: 12.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em;
+  display: inline-flex; align-items: center; gap: 6px; transition: background .15s, color .15s;
+}
+.pill:hover { background: var(--ink); color: var(--page); }
+.pill.primary { background: var(--ink); border-color: var(--ink); color: var(--page); border-radius: 0; padding: 10px 18px; }
+.pill.primary:hover { background: transparent; color: var(--ink); }
+.logo { width: 42px; height: 42px; flex: none; display: inline-block; background: url("data:image/png;base64,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") center / contain no-repeat; }
+.logo.lg { width: 72px; height: 72px; margin-bottom: 10px; }
+:root[data-theme="dark"] .logo { filter: invert(1); }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .logo { filter: invert(1); } }
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 6px); background: var(--card); border: 1px solid var(--border);
+  border-radius: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.14); padding: 6px; min-width: 220px; z-index: 30;
+}
+.menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 10px; border-radius: 0; cursor: pointer; }
+.menu button:hover, .menu button:focus-visible { background: var(--wash); }
+.menu .mhint { font-size: 11.5px; color: var(--muted); padding: 4px 10px 6px; }
+.user-chip { font-size: 12.5px; color: var(--ink-2); }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60; display: grid; place-items: center; padding: 16px; }
+.login-screen { position: fixed; inset: 0; background: var(--page); z-index: 70; display: grid; place-items: center; padding: 16px; }
+.dialog { background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 20px 22px; width: min(560px, 100%); max-height: 90vh; overflow: auto; }
+.dialog h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 12px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-2); }
+.form-grid .full { grid-column: 1 / -1; }
+.form-grid input, .form-grid select, .form-grid textarea { width: 100%; }
+input[type="email"], input[type="password"], input[type="time"] {
+  background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 6px 10px; min-height: 34px;
+}
+textarea { background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 6px 10px; min-height: 60px; font: inherit; color: inherit; }
+.err { color: var(--bad-text); font-size: 12.5px; min-height: 18px; margin-top: 8px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.link-btn { border: 0; background: none; color: var(--bad-text); cursor: pointer; padding: 2px 4px; font-size: 12px; }
+.print-head { display: none; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+@media print {
+  header.top, .filters, footer, .actions, .no-print, details.tv, .overlay, .login-screen { display: none !important; }
+  .print-head { display: block; margin-bottom: 12px; }
+  .print-head h1 { font-size: 18px; margin: 0 0 2px; }
+  body { background: #fff; color: #000; }
+  main { padding: 0; max-width: none; }
+  .card { break-inside: avoid; }
+  select { border: 0; appearance: none; padding: 0; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="title-row">
+      <span class="logo" role="img" aria-label="BBR"></span>
+      <div class="titles"><h1>Bodies by Ryan · Dashboard</h1><div class="meta">
+      <span class="sub" id="asOf"></span>
+      <span class="badge sample hidden" id="sampleBadge" title="Replace with live data by adding data.json">Sample data, not live</span>
+      <span class="badge sample" title="Access codes are checked in this browser only. Set up real logins before adding real member data.">Access code · not secure</span>
+      </div></div>
+      <span class="spacer"></span>
+      <span class="user-chip" id="userChip"></span>
+      <div class="menu-wrap">
+        <button class="pill" id="exportBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export ▾</button>
+        <div class="menu hidden" id="exportMenu" role="menu">
+          <div class="mhint">Exports the current tab with the filters applied</div>
+          <button type="button" role="menuitem" data-export="pdf">PDF <span class="muted">· opens print, choose "Save as PDF"</span></button>
+          <button type="button" role="menuitem" data-export="csv">CSV <span class="muted">· for Excel or Google Sheets</span></button>
+        </div>
+      </div>
+      <button class="btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">Theme</button>
+      <button class="btn" id="logoutBtn" type="button">Log out</button>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+
+<main>
+  <div class="print-head" id="printHead"></div>
+  <div id="meetingSlot" class="no-print"></div>
+  <div class="filters" id="filters">
+    <div class="seg" role="group" aria-label="Period type" id="periodType">
+      <button type="button" data-v="week">Week</button>
+      <button type="button" data-v="month">Month</button>
+      <button type="button" data-v="year">Year</button>
+    </div>
+    <select id="periodSel" aria-label="Period"></select>
+    <select id="accountSel" aria-label="Account">
+      <option value="all">All accounts</option>
+    </select>
+    <span class="muted" id="compareLabel"></span>
+  </div>
+  <section id="view"></section>
+</main>
+<footer>
+  <div class="row">
+    <span id="footNote"></span>
+    <span class="spacer"></span>
+    <button class="btn" type="button" id="dlTemplate">Download data.json template</button>
+  </div>
+</footer>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<div class="login-screen hidden" id="login">
+  <form class="dialog" id="loginForm" style="width:min(400px,100%)" novalidate>
+    <span class="logo lg" role="img" aria-label="BBR"></span>
+    <h2>Dashboard</h2>
+    <p class="hint" style="margin:0">Sign in to continue.</p>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <label>Your name<input type="text" id="loginName" required maxlength="60" autocomplete="name" placeholder="e.g. Sheila"></label>
+      <label>Access code<input type="password" id="loginCode" required maxlength="60" autocomplete="off" spellcheck="false"></label>
+    </div>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn primary" type="submit" style="width:100%;padding:12px">Sign in</button>
+    <p class="hint" style="margin:14px 0 0">Admins and the outreach team each have their own access code. Your name is saved with the leads, calls and notes you add.</p>
+  </form>
+</div>
+<div class="overlay hidden" id="modal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modalBody"></div></div>
+
+<script>
+/* =====================================================================
+   BBR Sales Dashboard
+   ---------------------------------------------------------------------
+   Data: the page loads ./data.json if it exists (see README for the
+   schema). If not, it builds SAMPLE data so the layout can be reviewed.
+   Sign-in: name + access code. The admin code shows every tab; the outreach
+   code shows the Sales tab, where they can add leads and calls. Checked in
+   the browser, so it is NOT real security. Put real logins in front of the
+   site before using real data.
+   ===================================================================== */
+
+const ACCOUNTS = [
+  { id: "online",    name: "BBR New Sales",  short: "Online",    color: "var(--s-online)" },
+  { id: "claremont", name: "BBR Claremont",  short: "Claremont", color: "var(--s-claremont)" },
+  { id: "jolimont",  name: "BBR Jolimont",   short: "Jolimont",  color: "var(--s-jolimont)" }
+];
+const ACC = Object.fromEntries(ACCOUNTS.map(a => [a.id, a]));
+const FEES = { late_cancel: 15, no_show: 30 };
+const STATUS_LABEL = { active: "Active", suspended: "Suspended", terminated: "Terminated", free: "Free gym access" };
+const NAME_RE = /^\s*(.+?)\s+[–—-]\s+(.+?)\s+[–—-]\s+(\d+)\s*\/\s*(\d+)\s*$/;
+const LS_KEY = "bbr-dashboard-v1";
+const ENTRY_KEY = "bbr-entries-v1";
+const SESSION_KEY = "bbr-session-v1";
+
+/* ACCESS CODES. One code per role. Only a SHA-256 hash of each code is kept here, so the
+   codes can't be read from the page source, but the check still runs in the browser:
+   treat it as a simple lock, not real security. To change a code, open the dashboard,
+   run  await hashCode("NEW-CODE")  in the browser console and paste the result below.
+   Codes ignore spaces, dashes and upper/lower case. */
+const ACCESS = [
+  { role: "admin",    label: "Admin",    hash: "86e207580f394798b599170686f4e73d8942334c77f95e6302aadcbbf800ffb9" },
+  { role: "outreach", label: "Outreach", hash: "2d70636438375c0549753a76bfae6e6f64d75cb0e27673c1e79cd69817163261" }
+];
+const NAME_KEY = "bbr-name-v1";
+const LEAD_SOURCES = ["Instagram DM", "Facebook", "Meta ad", "Referral", "Walk-in", "Website", "Other"];
+const INTERESTS = ["Gym membership", "Online coaching", "PT / custom program", "Not sure yet"];
+const CALL_STATUS = { booked: "Booked", showed: "Showed", no_show: "No-show", cancelled: "Cancelled", closed: "Closed (signed up)" };
+const PAY_TYPES = { full: "Paid in full", instalments: "Instalments", recurring: "Recurring" };
+const OFFER_TYPES = ["Gym membership", "Online program", "Custom program"];
+/* Weekly team meeting: every Monday 8:00 am Perth time (AWST, UTC+8, no daylight saving) */
+const MEETING = { title: "Monday team meeting", url: "https://meet.google.com/weo-esoz-gxs?hs=224", weekday: 1, hour: 8, minute: 0, durationMin: 60, offsetMin: 480, tz: "Australia/Perth" };
+const CHANGE_TYPES = { termination: "Termination", freeze: "Freeze", pause: "Pause" };
+const CHANGE_WINDOW_DAYS = 14;   // notification window
+const LOOKAHEAD_DAYS = 61;       // Clients tab list: about 2 months
+
+/* ---------- small utils ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const aud = (n, d = 0) => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-AU", { minimumFractionDigits: d, maximumFractionDigits: d });
+const compact = n => Math.abs(n) >= 1e6 ? "$" + (n / 1e6).toFixed(1) + "M" : Math.abs(n) >= 1e4 ? "$" + (n / 1e3).toFixed(1) + "K" : aud(n);
+const pct = (a, b) => b ? (a / b) * 100 : null;
+const fmtPct = v => v == null || !isFinite(v) ? "–" : v.toFixed(1) + "%";
+const iso = d => { const z = new Date(d); z.setMinutes(z.getMinutes() - z.getTimezoneOffset()); return z.toISOString().slice(0, 10); };
+const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const z = new Date(d); z.setDate(z.getDate() + n); return z; };
+const mondayOf = d => { const z = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const wd = (z.getDay() + 6) % 7; return addDays(z, -wd); };
+const dShort = d => d.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+const sum = (arr, f = x => x) => arr.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+function store() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; } }
+function save(patch) { try { localStorage.setItem(LS_KEY, JSON.stringify({ ...store(), ...patch })); } catch {} }
+const todayIso = () => iso(new Date());
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+/* ---------- manual entries (leads, calls, sign-ups), saved in this browser ---------- */
+function entries() {
+  try {
+    const e = JSON.parse(localStorage.getItem(ENTRY_KEY)) || {};
+    return { leads: e.leads || [], calls: e.calls || [], signups: e.signups || [], changes: e.changes || [], notes: e.notes || [], callStatus: e.callStatus || {} };
+  } catch { return { leads: [], calls: [], signups: [], changes: [], notes: [], callStatus: {} }; }
+}
+function saveEntries(e) { try { localStorage.setItem(ENTRY_KEY, JSON.stringify(e)); } catch {} }
+const isLocal = (kind, id) => entries()[kind].some(x => x.id === id);
+const allLeads = () => [...DATA.leads, ...entries().leads];
+const allSignups = () => [...DATA.signups, ...entries().signups];
+/* Scheduled terminations, freezes and pauses, joined to the member record (by email, then name) */
+function allChanges() {
+  return [...DATA.changes, ...entries().changes].map(c => {
+    const m = DATA.members.find(x => (c.email && x.email && x.email.toLowerCase() === c.email.toLowerCase()) || x.name.toLowerCase() === String(c.member || "").toLowerCase());
+    return { ...c, m };
+  });
+}
+function upcomingChanges(days) {
+  const t = new Date(); t.setHours(0, 0, 0, 0); const end = addDays(t, days);
+  return allChanges().filter(c => { const d = parse(c.start); return d >= t && d <= end && (state.account === "all" || !c.m || c.m.homeGym === state.account); })
+    .sort((a, b) => a.start.localeCompare(b.start));
+}
+function tenure(since) {
+  if (!since) return "";
+  const d = parse(since), t = new Date();
+  const months = (t.getFullYear() - d.getFullYear()) * 12 + t.getMonth() - d.getMonth() - (t.getDate() < d.getDate() ? 1 : 0);
+  if (months < 1) return "new member";
+  const y = Math.floor(months / 12), mo = months % 12;
+  return [y ? y + (y === 1 ? " yr" : " yrs") : "", mo ? mo + (mo === 1 ? " mth" : " mths") : ""].filter(Boolean).join(" ");
+}
+function changeLength(c) {
+  if (c.type === "termination") return "Ends membership";
+  if (!c.end) return "Open, no end date";
+  const w = Math.max(1, Math.round((parse(c.end) - parse(c.start)) / 864e5 / 7));
+  return `${w} ${w === 1 ? "week" : "weeks"}, to ${dShort(parse(c.end))}`;
+}
+function changeLost(c) {
+  const m = c.m; if (!m || m.upfront || !m.price) return null;
+  if (c.type === "termination") return { v: m.price * 26 / 12, per: "/ month" };
+  if (!c.end) return { v: m.price, per: "/ fortnight" };
+  const w = (parse(c.end) - parse(c.start)) / 864e5 / 7; return { v: (w / 2) * m.price, per: "total" };
+}
+function allCalls() {
+  const e = entries();
+  return [...DATA.calls, ...e.calls].map(c => e.callStatus[c.id] ? { ...c, status: e.callStatus[c.id] } : c);
+}
+
+/* ---------- client Instagram and source links ---------- */
+const cleanIG = h => String(h || "").trim().replace(/^https?:\/\/(www\.)?(instagram\.com|ig\.me\/m)\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
+const igOk = h => /^[A-Za-z0-9._]{1,30}$/.test(h);
+function igFor(client) {
+  const n = String(client || "").trim().toLowerCase(); if (!n) return "";
+  const hit = x => String(x.client || x.name || "").trim().toLowerCase() === n;
+  const src = [...DATA.payments, ...DATA.members, ...allSignups()].find(x => x.instagram && hit(x));
+  if (src) return cleanIG(src.instagram);
+  const lead = allLeads().find(x => hit(x) && /^@|instagram\.com/i.test(x.contact || ""));
+  return lead ? cleanIG(lead.contact) : "";
+}
+const igDM = h => "https://ig.me/m/" + encodeURIComponent(h);   // opens the Instagram chat with that account
+function stripeUrl(p) {
+  if (p.stripeUrl && /^https:\/\/dashboard\.stripe\.com\//.test(p.stripeUrl)) return p.stripeUrl;
+  if (/^(pi|ch|py)_[A-Za-z0-9]+$/.test(p.id || "")) return "https://dashboard.stripe.com/payments/" + p.id;
+  if (/^in_[A-Za-z0-9]+$/.test(p.id || "")) return "https://dashboard.stripe.com/invoices/" + p.id;
+  return "";
+}
+const slackUrl = s => s.permalink && /^https:\/\/[a-z0-9-]+\.slack\.com\//i.test(s.permalink) ? s.permalink : "";
+/* Link to a client's Instagram DMs. With sample data the handles aren't real, so it shows where it would go instead. */
+function igLink(client, label) {
+  const h = igFor(client);
+  if (!igOk(h)) return `<span class="muted">No IG handle</span>`;
+  if (DATA.meta?.sample) return `<button type="button" class="ig" data-igsample="${esc(h)}" data-client="${esc(client)}">${esc(label || "@" + h)}</button>`;
+  return `<a class="ig" href="${igDM(h)}" target="_blank" rel="noopener noreferrer">${esc(label || "@" + h)} ↗</a>`;
+}
+
+/* ---------- access codes ---------- */
+function sha256Fallback(str) {
+  const K = [], H = [];
+  let n = 2, c = 0;
+  const frac = x => (x - Math.floor(x)) * 4294967296 | 0;
+  while (c < 64) { let prime = true; for (let i = 2; i * i <= n; i++) if (n % i === 0) { prime = false; break; } if (prime) { if (c < 8) H[c] = frac(Math.pow(n, 1 / 2)); K[c++] = frac(Math.pow(n, 1 / 3)); } n++; }
+  const bytes = [...new TextEncoder().encode(str)], len = bytes.length * 8;
+  bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i > 3 ? 0 : (len >>> (i * 8)) & 255);
+  const r = (x, k) => (x >>> k) | (x << (32 - k)), w = new Array(64);
+  for (let o = 0; o < bytes.length; o += 64) {
+    for (let i = 0; i < 16; i++) w[i] = (bytes[o + i * 4] << 24) | (bytes[o + i * 4 + 1] << 16) | (bytes[o + i * 4 + 2] << 8) | bytes[o + i * 4 + 3];
+    for (let i = 16; i < 64; i++) { const s0 = r(w[i - 15], 7) ^ r(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = r(w[i - 2], 17) ^ r(w[i - 2], 19) ^ (w[i - 2] >>> 10); w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; }
+    let [a, b, cc, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+      const t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & b) ^ (a & cc) ^ (b & cc))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = cc; cc = b; b = a; a = (t1 + t2) | 0;
+    }
+    [a, b, cc, d, e, f, g, h].forEach((v, i) => H[i] = (H[i] + v) | 0);
+  }
+  return H.map(v => (v >>> 0).toString(16).padStart(8, "0")).join("");
+}
+async function hashCode(code) {
+  const norm = String(code || "").replace(/[\s-]+/g, "").toUpperCase();
+  try {
+    if (crypto?.subtle) { const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm)); return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join(""); }
+  } catch {}
+  return sha256Fallback(norm);
+}
+window.hashCode = hashCode;
+
+/* ---------- session ---------- */
+function currentUser() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+    return s && ACCESS.some(a => a.role === s.role) && s.name ? { name: String(s.name).slice(0, 60), role: s.role } : null;
+  } catch { return null; }
+}
+const isAdmin = () => state.user?.role === "admin";
+
+/* ---------- sample data (used only when data.json is missing) ---------- */
+function buildSample() {
+  let seed = 42;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = addDays(mondayOf(today), -7 * 52);
+  const first = ["Alex","Jordan","Sam","Taylor","Casey","Morgan","Riley","Jamie","Drew","Avery","Quinn","Harper","Rowan","Blake","Reese","Emerson","Sky","Hayden","Parker","Kai"];
+  const last = ["A.","B.","C.","D.","F.","G.","H.","K.","L.","M.","N.","P.","R.","S.","T.","W."];
+  const programs = ["12-Week Transformation","Strength Foundations","Online Coaching","Body Recomp","Hybrid PT"];
+
+  const offers = [
+    { id: "gfm-claremont", title: "GFM Claremont", created: iso(start), price: 159.98, account: "claremont", paymentType: "recurring", duration: "Ongoing", billing: "Fortnightly", homeGym: "claremont", crossGym: false, active: true, confirmed: true, kind: "membership" },
+    { id: "gfm-jolimont",  title: "GFM Jolimont",  created: iso(start), price: 149.98, account: "jolimont",  paymentType: "recurring", duration: "Ongoing", billing: "Fortnightly", homeGym: "jolimont",  crossGym: false, active: true, confirmed: true, kind: "membership" },
+    { id: "casual-10",     title: "Casual Pass (10 sessions)", created: iso(start), price: 300, account: "claremont", paymentType: "full", duration: "10 sessions", billing: "One-off", homeGym: "claremont", crossGym: true, active: true, confirmed: true, kind: "pass" },
+    { id: "student-gfm",   title: "Student GFM", created: iso(start), price: null, account: "claremont", paymentType: "recurring", duration: "Ongoing", billing: "Fortnightly", homeGym: "", crossGym: false, active: false, confirmed: false, kind: "membership" }
+  ];
+  const payments = [], slackPosts = [], members = [];
+  let pid = 1;
+
+  // Members on recurring memberships
+  for (let i = 0; i < 70; i++) {
+    const gym = rnd() < 0.55 ? "claremont" : "jolimont";
+    const offer = gym === "claremont" ? offers[0] : offers[1];
+    const joined = addDays(start, Math.floor(rnd() * 330));
+    const r = rnd();
+    const status = r < 0.76 ? "active" : r < 0.87 ? "suspended" : r < 0.96 ? "terminated" : "free";
+    const upfront = rnd() < 0.12;
+    const mname = pick(first) + " " + pick(last);
+    const m = { id: "m" + i, name: mname, email: mname.toLowerCase().replace(/[^a-z]+/g, ".") + i + "@example.com", homeGym: gym, offerId: offer.id, status, price: offer.price, billing: "fortnight", upfront, since: iso(joined), suspensionWeeks: status === "suspended" ? 2 + Math.floor(rnd() * 7) : 0, crossGym: rnd() < 0.15 };
+    members.push(m);
+    if (status === "free") continue;
+    const endDate = status === "terminated" ? addDays(joined, 60 + Math.floor(rnd() * 200)) : today;
+    for (let d = new Date(joined); d <= endDate && d <= today; d = addDays(d, 14)) {
+      if (status === "suspended" && d > addDays(today, -m.suspensionWeeks * 7)) break;
+      payments.push({ id: "p" + pid++, date: iso(d), account: gym, client: m.name, offerId: offer.id, amount: upfront ? 0 : offer.price, status: "collected", kind: "membership" });
+    }
+    if (upfront) payments.push({ id: "p" + pid++, date: m.since, account: gym, client: m.name, offerId: offer.id, amount: Math.round(offer.price * 13), status: "collected", kind: "membership" });
+  }
+  // Scheduled terminations, freezes and pauses (sample)
+  const changes = [];
+  const reasons = { termination: ["Moving interstate", "Cost", "Injury", "Training elsewhere"], freeze: ["Travel", "Work roster", "Holiday"], pause: ["Medical", "Surgery recovery", "Pregnancy"] };
+  members.filter(m => m.status === "active").slice(0, 11).forEach((m, i) => {
+    const type = ["termination", "freeze", "pause", "freeze", "termination", "freeze", "pause", "freeze", "termination", "freeze", "freeze"][i];
+    const start = addDays(today, [1, 3, 5, 6, 9, 12, 16, 22, 28, 35, 48][i]);
+    const end = type === "termination" ? "" : i === 5 ? "" : iso(addDays(start, 7 * (2 + (i % 5))));
+    m.instagram = m.name.toLowerCase().replace(/[^a-z]/g, "") + i + ".sample";
+    changes.push({ id: "x" + i, member: m.name, email: m.email, type, start: iso(start), end, reason: pick(reasons[type]), loggedBy: "Sheila", loggedOn: iso(addDays(today, -1 - (i % 4))) });
+  });
+  // Remove zero rows from upfront payers
+  for (let i = payments.length - 1; i >= 0; i--) if (payments[i].amount === 0) payments.splice(i, 1);
+
+  // Custom PT / online offers, with deposits and instalments
+  for (let i = 0; i < 46; i++) {
+    const person = pick(first) + " " + pick(last);
+    const prog = pick(programs);
+    const n = pick([1, 2, 2, 3, 4, 6]);
+    const total = Math.round((1500 + rnd() * 5000) / 50) * 50;
+    const acc = prog === "Online Coaching" || rnd() < 0.35 ? "online" : pick(["claremont", "jolimont"]);
+    const created = addDays(start, Math.floor(rnd() * 362));
+    const deposit = n === 1 ? total : Math.round(total * (0.35 + rnd() * 0.2) / 50) * 50;
+    const rest = (total - deposit) / Math.max(1, n - 1);
+    const offerId = "o" + i;
+    const transfer = acc === "online" && prog !== "Online Coaching" && rnd() < 0.4 ? { to: pick(["claremont", "jolimont"]), confirmed: rnd() < 0.5, onList: rnd() < 0.7 } : null;
+    const instagram = person.toLowerCase().replace(/[^a-z]/g, "") + ".sample";
+    offers.push({ id: offerId, title: `${person} – ${prog} – 1/${n}`, created: iso(created), price: total, account: acc,
+      paymentType: n === 1 ? "full" : "instalments", duration: pick(["6 weeks","12 weeks","3 months","6 months"]), billing: n === 1 ? "One-off" : "Monthly",
+      homeGym: acc === "online" ? (transfer ? transfer.to : "") : acc, crossGym: rnd() < 0.2, active: rnd() < 0.85, confirmed: rnd() < 0.8, kind: "custom",
+      deposit, instalments: n, transfer });
+    for (let k = 0; k < n; k++) {
+      const due = addDays(created, k * 30);
+      const amt = k === 0 ? deposit : Math.round(rest * 100) / 100;
+      const paid = due <= today && rnd() > 0.06;
+      payments.push({ id: "p" + pid++, date: iso(due), dueDate: iso(due), account: acc, client: person, instagram, offerId, amount: amt, instalment: k + 1, of: n,
+        status: due > today ? "scheduled" : paid ? "collected" : "outstanding", kind: "custom", transfer: k === 0 ? transfer : null });
+      if (k === 0 && due <= today) {
+        if (rnd() > 0.05) slackPosts.push({ date: iso(due), client: person, amount: amt, account: acc });
+      }
+    }
+    if (rnd() < 0.06) slackPosts.push({ date: iso(addDays(created, 1)), client: pick(first) + " " + pick(last), amount: deposit, account: acc });
+  }
+  // A few "unknown" Stripe offers waiting for details
+  for (let i = 0; i < 3; i++) {
+    offers.push({ id: "new" + i, title: pick(["Black Friday 3 Month PT", "PT 10 Pack", "Summer Shred Online"]), created: iso(addDays(today, -i - 1)), price: Math.round(300 + rnd() * 900),
+      account: "online", paymentType: "", duration: "", billing: "", homeGym: "", crossGym: false, active: true, confirmed: false, kind: "custom" });
+  }
+
+  // Momence fees
+  const fees = [];
+  for (let d = new Date(start); d <= today; d = addDays(d, 1)) {
+    for (const gym of ["claremont", "jolimont"]) {
+      if (rnd() < 0.35) fees.push({ date: iso(d), gym, type: "late_cancel", amount: FEES.late_cancel, waived: rnd() < 0.12 });
+      if (rnd() < 0.18) fees.push({ date: iso(d), gym, type: "no_show", amount: FEES.no_show, waived: rnd() < 0.15 });
+    }
+  }
+  // Meta ad spend per week, and outreach funnel per week
+  // Weekly history from the outreach KPI tracker (before manual entry started), and sign-ups entered by hand
+  const adSpend = [], funnel = [], signups = [];
+  for (let w = new Date(start); w <= today; w = addDays(w, 7)) {
+    adSpend.push({ weekStart: iso(w), channel: "gyms", amount: Math.round(250 + rnd() * 200) });
+    adSpend.push({ weekStart: iso(w), channel: "online", amount: Math.round(150 + rnd() * 150) });
+    const booked = 10 + Math.floor(rnd() * 12);
+    const cancellations = Math.floor(rnd() * 3);
+    const noShows = Math.floor(rnd() * 4);
+    const showed = Math.max(0, booked - cancellations - noShows);
+    funnel.push({ weekStart: iso(w), leads: booked + 8 + Math.floor(rnd() * 20), booked, showed, noShows, cancellations });
+    const closes = Math.round(showed * (0.2 + rnd() * 0.2));
+    for (let k = 0; k < closes; k++) {
+      const d = addDays(w, Math.floor(rnd() * 7));
+      if (d > today) continue;
+      const prog = pick(programs);
+      const total = Math.round((1500 + rnd() * 5000) / 50) * 50;
+      const payType = pick(["full", "instalments", "instalments", "recurring"]);
+      const person = pick(first) + " " + pick(last);
+      signups.push({ id: "s" + signups.length, date: iso(d), client: person, email: person.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.com",
+        program: prog, offerType: prog === "Online Coaching" ? "Online program" : "Custom program",
+        account: prog === "Online Coaching" ? "online" : pick(["claremont", "jolimont", "online"]), total,
+        cash: payType === "full" ? total : Math.round(total * 0.4 / 50) * 50, paymentType: payType,
+        closedBy: pick(["Ryan", "Amy"]), source: pick(LEAD_SOURCES), notes: "" });
+    }
+  }
+  return {
+    meta: { business: "Bodies by Ryan", currency: "AUD", generatedAt: new Date().toISOString(), sample: true },
+    goals: { monthlyRevenue: {} },
+    offers, payments, slackPosts, members, fees, adSpend, funnel, leads: [], calls: [], signups, changes,
+    notes: changes.slice(0, 3).map((c, i) => ({ id: "nt" + i, clientKey: "e:" + c.email, client: c.member, kind: "change", text: `Emailed to request a ${c.type} from ${dShort(parse(c.start))}. Actioned in Momence.`, by: "Sheila", at: new Date(today.getTime() - (i + 1) * 864e5).toISOString() }))
+  };
+}
+
+/* ---------- state ---------- */
+let DATA = null;
+const state = {
+  tab: "overview",
+  periodType: store().periodType || "month",
+  periodKey: null,
+  account: "all",
+  user: null
+};
+const TABS = [
+  { id: "overview", label: "Overview and Notifications" },
+  { id: "sales", label: "Sales" },
+  { id: "clients", label: "Clients" },
+  { id: "products", label: "Offers" },
+  { id: "reports", label: "Reports" }
+];
+
+/* ---------- periods ---------- */
+function periodRange(type, key) {
+  if (type === "week") { const s = parse(key); return [s, addDays(s, 7)]; }
+  if (type === "month") { const [y, m] = key.split("-").map(Number); return [new Date(y, m - 1, 1), new Date(y, m, 1)]; }
+  const y = Number(key); return [new Date(y, 0, 1), new Date(y + 1, 0, 1)];
+}
+function periodKeyOf(type, d) {
+  if (type === "week") return iso(mondayOf(d));
+  if (type === "month") return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  return String(d.getFullYear());
+}
+function prevKey(type, key) {
+  const [s] = periodRange(type, key);
+  return periodKeyOf(type, type === "week" ? addDays(s, -7) : type === "month" ? new Date(s.getFullYear(), s.getMonth() - 1, 1) : new Date(s.getFullYear() - 1, 0, 1));
+}
+function periodLabel(type, key) {
+  const [s, e] = periodRange(type, key);
+  if (type === "week") return `Week of ${dShort(s)} – ${dShort(addDays(e, -1))} ${s.getFullYear()}`;
+  if (type === "month") return s.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+  return key;
+}
+function periodKeys(type) {
+  const dates = DATA.payments.map(p => p.date).sort();
+  const first = dates.length ? parse(dates[0]) : new Date();
+  const keys = []; let k = periodKeyOf(type, new Date());
+  const stop = periodKeyOf(type, first);
+  for (let i = 0; i < 120; i++) { keys.push(k); if (k === stop) break; k = prevKey(type, k); }
+  return keys;
+}
+const inRange = (dateStr, [s, e]) => { const d = parse(dateStr); return d >= s && d < e; };
+/* If the selected period is still running, compare with the same number of days of the previous period */
+function prevRange() {
+  const cur = periodRange(state.periodType, state.periodKey);
+  const prev = periodRange(state.periodType, prevKey(state.periodType, state.periodKey));
+  const tomorrow = addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1);
+  if (tomorrow >= cur[1]) return prev;
+  const days = Math.round((tomorrow - cur[0]) / 864e5);
+  const e = addDays(prev[0], days);
+  return [prev[0], e < prev[1] ? e : prev[1]];
+}
+function isRunning() { return addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1) < periodRange(state.periodType, state.periodKey)[1]; }
+const lastDay = range => { const t = addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1); return addDays(range[1] < t ? range[1] : t, -1); };
+
+/* ---------- metrics ---------- */
+const byAccount = p => state.account === "all" || p.account === state.account;
+function paymentsIn(range, { status = "collected", account = true } = {}) {
+  return DATA.payments.filter(p => inRange(p.date, range) && (status === "any" || p.status === status) && (!account || byAccount(p)));
+}
+function revenue(range) { return sum(paymentsIn(range), p => p.amount); }
+function feeIncome(range) {
+  const f = DATA.fees.filter(x => inRange(x.date, range) && (state.account === "all" || x.gym === state.account));
+  const gross = sum(f, x => x.amount), waived = sum(f.filter(x => x.waived), x => x.amount);
+  return { gross, waived, net: gross - waived, late: f.filter(x => x.type === "late_cancel" && !x.waived).length, noshow: f.filter(x => x.type === "no_show" && !x.waived).length, rows: f };
+}
+function adSpend(range, channel) { return sum(DATA.adSpend.filter(a => inRange(a.weekStart, range) && (!channel || a.channel === channel)), a => a.amount); }
+/* Funnel = weekly tracker history (funnel[]) + leads and calls entered by hand.
+   Closes always come from sign-ups entered by hand. Calls booked count on the day
+   they were booked; show-ups, no-shows and cancellations on the day of the call. */
+function funnelIn(range) {
+  const rows = DATA.funnel.filter(f => inRange(f.weekStart, range));
+  const calls = allCalls();
+  const held = calls.filter(c => c.callDate && inRange(c.callDate, range));
+  const st = s => held.filter(c => c.status === s).length;
+  return {
+    leads: sum(rows, r => r.leads) + allLeads().filter(l => inRange(l.date, range)).length,
+    booked: sum(rows, r => r.booked) + calls.filter(c => inRange(c.bookedOn, range)).length,
+    showed: sum(rows, r => r.showed) + st("showed") + st("closed"),
+    noShows: sum(rows, r => r.noShows) + st("no_show"),
+    cancellations: sum(rows, r => r.cancellations) + st("cancelled"),
+    closes: allSignups().filter(s => inRange(s.date, range)).length
+  };
+}
+const signupsIn = range => allSignups().filter(s => inRange(s.date, range) && byAccount(s));
+function recurringFortnightly() {
+  return sum(DATA.members.filter(m => m.status === "active" && !m.upfront && (state.account === "all" || m.homeGym === state.account)), m => m.price);
+}
+function churn() {
+  const ms = DATA.members.filter(m => state.account === "all" || m.homeGym === state.account);
+  const susp = ms.filter(m => m.status === "suspended"), term = ms.filter(m => m.status === "terminated");
+  const lost = m => m.upfront ? 0 : (m.suspensionWeeks / 2) * m.price;
+  return { susp, term, lostCash: sum(susp, lost), lost };
+}
+function goalFor(monthKey) { const g = DATA.goals && DATA.goals.monthlyRevenue && DATA.goals.monthlyRevenue[monthKey]; return g == null ? null : Number(g); }
+function delta(cur, prev, { money = true, upGood = true } = {}) {
+  if (!prev) return `<span class="muted">No data for previous period</span>`;
+  const d = cur - prev, p = (d / prev) * 100;
+  const good = upGood ? d >= 0 : d <= 0;
+  const sign = d >= 0 ? "▲" : "▼";
+  return `<span class="${good ? "up" : "down"}">${sign} ${Math.abs(p).toFixed(1)}%</span> <span class="muted">vs ${money ? compact(prev) : prev} ${isRunning() ? "same point last period" : "previous period"}</span>`;
+}
+function notifications() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const in14 = addDays(today, 14);
+  const upcoming = DATA.payments.filter(p => p.status === "scheduled" && parse(p.date) <= in14 && byAccount(p)).sort((a, b) => a.date.localeCompare(b.date));
+  const uncollected = DATA.payments.filter(p => p.status === "outstanding" && byAccount(p)).sort((a, b) => b.date.localeCompare(a.date));
+  const transfers = DATA.payments.filter(p => p.transfer && !p.transfer.confirmed && p.status === "collected");
+  const key = x => (x.client + "|" + x.date + "|" + Math.round(x.amount)).toLowerCase();
+  const firstPays = DATA.payments.filter(p => p.kind === "custom" && (p.instalment || 1) === 1 && p.status === "collected" && parse(p.date) >= addDays(today, -60));
+  const slackKeys = new Set(DATA.slackPosts.map(key));
+  const payKeys = new Set(firstPays.map(key));
+  const noSlack = firstPays.filter(p => !slackKeys.has(key(p)));
+  const noStripe = DATA.slackPosts.filter(s => parse(s.date) >= addDays(today, -60) && !payKeys.has(key(s)));
+  const needDetails = DATA.offers.filter(o => !o.confirmed || !o.paymentType || !o.billing);
+  return { upcoming, uncollected, transfers, noSlack, noStripe, needDetails };
+}
+
+/* ---------- charts ---------- */
+const tip = $("#tip");
+function showTip(html, ev) { tip.innerHTML = html; tip.style.display = "block"; moveTip(ev); }
+function moveTip(ev) {
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+function bindTips(root) {
+  root.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mouseenter", e => showTip(el.getAttribute("data-tip"), e));
+    el.addEventListener("mousemove", moveTip);
+    el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("focus", () => { const b = el.getBoundingClientRect(); showTip(el.getAttribute("data-tip"), { clientX: b.right, clientY: b.top }); });
+    el.addEventListener("blur", hideTip);
+  });
+}
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function tickFmt(v, money) { if (!money) return v.toLocaleString("en-AU"); return v >= 10000 ? "$" + Math.round(v / 1000) + "K" : "$" + v.toLocaleString("en-AU"); }
+
+/* Stacked columns: rows = [{label, sub, values:{key:n}}], series = [{key,name,color}] */
+function stackedColumns(rows, series, { height = 240, money = true, highlight = -1, width = 760 } = {}) {
+  const W = width, H = height, L = 52, R = 8, T = 10, B = 28;
+  const totals = rows.map(r => sum(series, s => r.values[s.key] || 0));
+  let step = niceMax(Math.max(...totals, 0) / 4);
+  if (!money) step = Math.max(1, Math.ceil(step));
+  const max = step * 4;
+  const band = (W - L - R) / rows.length, bw = Math.min(24, band * 0.62);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let g = "";
+  for (let i = 0; i <= 4; i++) {
+    const v = (max / 4) * i, yy = y(v);
+    g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${i ? "var(--grid)" : "var(--axis)"}" stroke-width="1"/>`;
+    g += `<text x="${L - 8}" y="${yy + 4}" text-anchor="end">${tickFmt(v, money)}</text>`;
+  }
+  const every = Math.ceil(rows.length / 12);
+  rows.forEach((r, i) => {
+    const x = L + band * i + (band - bw) / 2;
+    let base = 0; const segs = [];
+    series.forEach(s => { const v = r.values[s.key] || 0; if (v > 0) segs.push({ s, v, y0: base, y1: base + v }); base += v; });
+    segs.forEach((sg, j) => {
+      const top = y(sg.y1), bot = y(sg.y0);
+      const gap = j > 0 ? 2 : 0;
+      const h = Math.max(0, bot - top - gap);
+      const last = j === segs.length - 1;
+      const rr = last ? Math.min(4, h, bw / 2) : 0;
+      const op = highlight >= 0 && highlight !== i ? 0.45 : 1;
+      g += last
+        ? `<path d="M${x},${top + h} V${top + rr} Q${x},${top} ${x + rr},${top} H${x + bw - rr} Q${x + bw},${top} ${x + bw},${top + rr} V${top + h} Z" fill="${sg.s.color}" opacity="${op}"/>`
+        : `<rect x="${x}" y="${top}" width="${bw}" height="${h}" fill="${sg.s.color}" opacity="${op}"/>`;
+    });
+    if (i % every === 0 || i === rows.length - 1) g += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${esc(r.label)}</text>`;
+    const tipHtml = `<div class="t" style="font-weight:600;margin-bottom:4px">${esc(r.sub || r.label)}</div>` +
+      series.map(s => `<div class="tr"><span><span class="dot" style="background:${s.color}"></span> ${esc(s.name)}</span><span>${money ? aud(r.values[s.key] || 0) : (r.values[s.key] || 0)}</span></div>`).join("") +
+      `<div class="tr" style="border-top:1px solid var(--grid);margin-top:4px;padding-top:4px"><span>Total</span><span>${money ? aud(totals[i]) : totals[i]}</span></div>`;
+    g += `<rect x="${L + band * i}" y="${T}" width="${band}" height="${H - T - B}" fill="transparent" tabindex="0" data-tip="${esc(tipHtml)}"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Stacked column chart">${g}</svg>`;
+}
+
+/* Horizontal bars: items = [{label, value, color, note}] */
+function hbars(items, { money = false, max = null } = {}) {
+  const m = max ?? Math.max(...items.map(i => i.value), 1);
+  return `<div style="display:grid;gap:10px">` + items.map(it => {
+    const w = Math.max(0, (it.value / m) * 100);
+    const tipHtml = `<div style="font-weight:600">${esc(it.label)}</div><div class="tr"><span>Value</span><span>${money ? aud(it.value) : it.value.toLocaleString("en-AU")}</span></div>${it.note ? `<div class="muted">${esc(it.note)}</div>` : ""}`;
+    return `<div tabindex="0" data-tip="${esc(tipHtml)}">
+      <div class="row" style="justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>${esc(it.label)}</span><span style="font-variant-numeric:tabular-nums;font-weight:600">${money ? aud(it.value) : it.value.toLocaleString("en-AU")}${it.note ? ` <span class="muted" style="font-weight:400">${esc(it.note)}</span>` : ""}</span></div>
+      <div style="height:14px;background:var(--wash);border-radius:0 4px 4px 0"><div style="height:100%;width:${w}%;background:${it.color};border-radius:0 4px 4px 0"></div></div>
+    </div>`;
+  }).join("") + `</div>`;
+}
+const legend = series => `<div class="legend">${series.map(s => `<span><span class="dot" style="background:${s.color}"></span>${esc(s.name)}</span>`).join("")}</div>`;
+const tile = (label, value, d = "", extra = "") => `<div class="card tile"><div class="label">${label}</div><div class="value">${value}</div><div class="delta">${d}</div>${extra}</div>`;
+function tableView(head, rows, numCols = []) {
+  return `<details class="tv"><summary>Show as table</summary><div class="table-wrap"><table><thead><tr>${head.map((h, i) => `<th class="${numCols.includes(i) ? "num" : ""}">${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${numCols.includes(i) ? "num" : ""}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>`;
+}
+function accountSeries() { return (state.account === "all" ? ACCOUNTS : [ACC[state.account]]).map(a => ({ key: a.id, name: a.short, color: a.color })); }
+
+/* Weekly revenue rows for the last n weeks ending in the selected period */
+function weeklyRows(n) {
+  let w = mondayOf(lastDay(periodRange(state.periodType, state.periodKey)));
+  const rows = [];
+  for (let i = 0; i < n; i++) {
+    const r = [w, addDays(w, 7)];
+    const values = {};
+    ACCOUNTS.forEach(a => values[a.id] = sum(DATA.payments.filter(p => p.status === "collected" && p.account === a.id && inRange(p.date, r) && byAccount(p)), p => p.amount));
+    rows.unshift({ label: dShort(w), sub: `Week of ${dShort(w)} ${w.getFullYear()}`, values, range: r });
+    w = addDays(w, -7);
+  }
+  return rows;
+}
+function monthlyRows(n) {
+  const rows = []; let k = periodKeyOf("month", addDays(periodRange(state.periodType, state.periodKey)[1], -1));
+  for (let i = 0; i < n; i++) {
+    const r = periodRange("month", k);
+    const values = {};
+    ACCOUNTS.forEach(a => values[a.id] = sum(DATA.payments.filter(p => p.status === "collected" && p.account === a.id && inRange(p.date, r) && byAccount(p)), p => p.amount));
+    rows.unshift({ key: k, label: r[0].toLocaleDateString("en-AU", { month: "short" }), sub: periodLabel("month", k), values, range: r });
+    k = prevKey("month", k);
+  }
+  return rows;
+}
+
+/* ---------- views ---------- */
+function viewOverview() {
+  const range = periodRange(state.periodType, state.periodKey);
+  const pRange = prevRange();
+  const rev = revenue(range), prev = revenue(pRange);
+  const fees = feeIncome(range);
+  const spend = adSpend(range);
+  const monthKey = periodKeyOf("month", addDays(range[1], -1));
+  const goal = goalFor(monthKey);
+  const mtd = revenue(periodRange("month", monthKey));
+  const rec = recurringFortnightly();
+  const ch = churn();
+  const n = notifications();
+  const dueSoon = sum(n.upcoming, p => p.amount);
+  const moneyIn = rev + fees.net;
+
+  const goalHtml = goal
+    ? `<div class="meter" aria-label="Goal progress"><span style="width:${Math.min(100, (mtd / goal) * 100)}%"></span></div><div class="delta">${aud(mtd)} of ${aud(goal)} goal for ${periodLabel("month", monthKey)} (${fmtPct(pct(mtd, goal))})</div>`
+    : `<div class="delta muted">Monthly goal not set yet. Add it to <code>goals.monthlyRevenue</code> in data.json.</div>`;
+
+  const series = accountSeries();
+  const wk = weeklyRows(12);
+  const notifList = [];
+  const go = (target, txt, extra = "") => `<button type="button" class="n-item" data-go="${target}"${extra}><span class="txt">${txt}</span><span class="go" aria-hidden="true">→</span></button>`;
+  const ext = (url, txt) => `<a class="n-item" href="${esc(url)}" target="_blank" rel="noopener noreferrer"><span class="txt">${txt}</span><span class="go" aria-hidden="true">↗</span></a>`;
+  const group = (cls, ico, title, count, target, items, more = "") => notifList.push(`<div class="notif ${cls}"><div class="ico" aria-hidden="true">${ico}</div><div style="flex:1;min-width:0">
+    <button type="button" class="n-head" data-go="${target}">${title} <span class="count">${count}</span> <span aria-hidden="true">→</span></button>
+    <div>${items.join("")}${more}</div></div></div>`);
+  const payItem = p => {
+    const txt = `${esc(p.client)} · ${aud(p.amount, 2)} due ${dShort(parse(p.date))}`;
+    const h = igFor(p.client);
+    if (!igOk(h)) return go("reports:r-outstanding", txt + ` <span class="muted">· no IG handle</span>`);
+    if (DATA.meta?.sample) return `<button type="button" class="n-item" data-igsample="${esc(h)}" data-client="${esc(p.client)}"><span class="txt">${txt} · @${esc(h)}</span><span class="go" aria-hidden="true">↗</span></button>`;
+    return ext(igDM(h), txt + ` · @${esc(h)}`);
+  };
+  if (n.uncollected.length) group("n-payment", "!", "Payments not yet collected", n.uncollected.length, "reports:r-outstanding",
+    n.uncollected.slice(0, 3).map(payItem), n.uncollected.length > 3 ? go("reports:r-outstanding", `+${n.uncollected.length - 3} more`) : "");
+  if (n.noStripe.length || n.noSlack.length) group("n-slack", "≠", "Slack and Stripe mismatches", n.noStripe.length + n.noSlack.length, "reports:r-mismatch", [
+    ...n.noStripe.slice(0, 2).map(s => { const t = `Slack post, no Stripe payment: ${esc(s.client)} ${aud(s.amount)} (${dShort(parse(s.date))})`; const u = slackUrl(s); return u ? ext(u, t) : go("reports:r-mismatch", t); }),
+    ...n.noSlack.slice(0, 2).map(p => { const t = `Stripe payment, no Slack post: ${esc(p.client)} ${aud(p.amount)} (${dShort(parse(p.date))})`; const u = stripeUrl(p); return u ? ext(u, t) : go("reports:r-mismatch", t); })]);
+  if (n.transfers.length) group("n-transfer", "⇄", "Transfers between accounts waiting", n.transfers.length, "reports:r-transfers",
+    n.transfers.slice(0, 3).map(p => go("reports:r-transfers", `${esc(p.client)} · ${aud(p.amount)} Online → ${esc(ACC[p.transfer.to]?.short || "?")}${p.transfer.onList ? "" : " · not on Sheila's list"} · needs accounting confirmation`)));
+  if (n.upcoming.length) group("n-upcoming", "↻", "Upcoming collections, next 14 days", n.upcoming.length, "reports:r-upcoming",
+    [`<div class="n-item" style="cursor:default">${aud(dueSoon)} due</div>`, ...n.upcoming.slice(0, 3).map(p => go("reports:r-upcoming", `${esc(p.client)} ${aud(p.amount)} on ${dShort(parse(p.date))}`))]);
+  const chg = upcomingChanges(CHANGE_WINDOW_DAYS);
+  if (chg.length) group("n-change", "‖", `Terminations, freezes and pauses starting, next ${CHANGE_WINDOW_DAYS} days`, chg.length, "clients:c-changes",
+    chg.slice(0, 4).map(c => go("clients:c-changes", `${esc(c.member)} · <strong>${CHANGE_TYPES[c.type] || esc(c.type)}</strong> from ${dShort(parse(c.start))}${c.type !== "termination" ? ` · ${esc(changeLength(c))}` : ""}${c.m?.since ? ` · member ${tenure(c.m.since)}` : ""}`)),
+    chg.length > 4 ? go("clients:c-changes", `+${chg.length - 4} more`) : "");
+  if (n.needDetails.length) group("n-offer", "?", "Offers needing details or Ryan's confirmation", n.needDetails.length, "products:todo",
+    n.needDetails.slice(0, 3).map(o => go("products:todo", esc(o.title))));
+  if (!notifList.length) notifList.push(`<div class="empty">Nothing needs attention.</div>`);
+
+  return `
+  <div class="grid g-tiles">
+    <div class="card tile hero" style="grid-column: span 2"><div class="label">Sales collected · ${esc(periodLabel(state.periodType, state.periodKey))}</div><div class="value">${aud(rev)}</div><div class="delta">${delta(rev, prev)}</div>${goalHtml}</div>
+    ${tile("Recurring revenue", aud(rec * 26 / 12), `<span class="muted">${aud(rec)} a fortnight from active members</span>`)}
+    ${tile("Churn · lost cash flow", aud(ch.lostCash), `<span class="muted">${ch.susp.length} suspended · ${ch.term.length} terminated</span>`)}
+    ${tile("Collections due, next 14 days", aud(dueSoon), `<span class="muted">${n.upcoming.length} payments · ${n.uncollected.length} overdue</span>`)}
+    ${tile("Money in vs money out", aud(moneyIn - spend), `<span class="muted">${aud(moneyIn)} in · ${aud(spend)} Meta ad spend</span>`)}
+    ${tile("Sign-ups", signupsIn(range).length, delta(signupsIn(range).length, signupsIn(pRange).length, { money: false }))}
+  </div>
+  <div class="section-gap"></div>
+  <div class="grid g-2">
+    <div class="card">
+      <h2>Weekly sales by account</h2>
+      <p class="hint">Last 12 weeks, collected payments. Totals count toward the account the money came from.</p>
+      ${series.length > 1 ? legend(series) : ""}
+      ${stackedColumns(wk, series, { highlight: state.periodType === "week" ? 11 : -1 })}
+      ${tableView(["Week", ...series.map(s => s.name), "Total"], wk.map(r => [esc(r.sub), ...series.map(s => aud(r.values[s.key] || 0)), aud(sum(series, s => r.values[s.key] || 0))]), [1, 2, 3, 4])}
+    </div>
+    <div class="card">
+      <h2>Notifications</h2>
+      <p class="hint">Updated whenever the data refreshes.</p>
+      ${notifList.join("")}
+    </div>
+  </div>
+  <div class="section-gap"></div>
+  ${comparisonCard()}
+  `;
+}
+
+function sameDays(type, key) {
+  const cur = periodRange(type, key), prev = periodRange(type, prevKey(type, key));
+  const days = Math.round((addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1) - cur[0]) / 864e5);
+  const e = addDays(prev[0], days); return [prev[0], e < prev[1] ? e : prev[1]];
+}
+function comparisonCard() {
+  const today = new Date();
+  const wk = periodKeyOf("week", today), mo = periodKeyOf("month", today);
+  const rows = [
+    ["This week vs last week (to the same day)", periodRange("week", wk), sameDays("week", wk)],
+    ["This month vs last month (to the same day)", periodRange("month", mo), sameDays("month", mo)]
+  ].map(([label, a, b]) => {
+    const ra = revenue(a), rb = revenue(b), fa = funnelIn(a), fb = funnelIn(b);
+    return `<tr><td>${label}</td><td class="num">${aud(ra)}</td><td class="num">${aud(rb)}</td><td class="num">${rb ? `<span class="${ra >= rb ? "up" : "down"}">${ra >= rb ? "▲" : "▼"} ${Math.abs(((ra - rb) / rb) * 100).toFixed(1)}%</span>` : "–"}</td><td class="num">${fa.booked} / ${fb.booked}</td><td class="num">${fa.closes} / ${fb.closes}</td></tr>`;
+  }).join("");
+  return `<div class="card"><h2>Week-on-week and month-on-month</h2><p class="hint">Always uses the current week and month, whatever period is selected above.</p>
+  <div class="table-wrap"><table><thead><tr><th>Comparison</th><th class="num">Sales now</th><th class="num">Sales before</th><th class="num">Change</th><th class="num">Calls booked (now / before)</th><th class="num">Closes (now / before)</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function viewSales() {
+  const admin = isAdmin();
+  const range = periodRange(state.periodType, state.periodKey);
+  const pRange = prevRange();
+  const f = funnelIn(range), pf = funnelIn(pRange);
+  const show = pct(f.showed, f.booked), close = pct(f.closes, f.showed);
+  const stages = [
+    { label: "New leads", value: f.leads, color: "var(--funnel-1)" },
+    { label: "Calls booked", value: f.booked, color: "var(--funnel-2)", note: fmtPct(pct(f.booked, f.leads)) + " of leads" },
+    { label: "Showed", value: f.showed, color: "var(--funnel-3)", note: fmtPct(show) + " of booked" },
+    { label: "Sign-ups", value: f.closes, color: "var(--funnel-4)", note: fmtPct(close) + " of showed" }
+  ];
+  const lost = [
+    { label: "No-shows", value: f.noShows, color: "var(--serious)" },
+    { label: "Cancellations", value: f.cancellations, color: "var(--serious)" }
+  ];
+  // weekly trend
+  let w = mondayOf(lastDay(range)); const trend = [];
+  for (let i = 0; i < 12; i++) {
+    const fr = funnelIn([w, addDays(w, 7)]);
+    trend.unshift({ label: dShort(w), sub: `Week of ${dShort(w)} ${w.getFullYear()}`, values: { closes: fr.closes, other: Math.max(0, fr.booked - fr.closes) }, raw: fr });
+    w = addDays(w, -7);
+  }
+  const tSeries = [{ key: "closes", name: "Sign-ups", color: "var(--s-online)" }, { key: "other", name: "Booked, not signed up", color: "var(--s-claremont)" }];
+  // programs sold (from sign-ups entered by hand)
+  const sus = signupsIn(range);
+  const prog = {};
+  sus.forEach(s => { const k = s.program || "Unknown"; prog[k] = prog[k] || { n: 0, value: 0 }; prog[k].n++; prog[k].value += Number(s.total) || 0; });
+  const progRows = Object.entries(prog).sort((a, b) => b[1].n - a[1].n);
+  // ROAS
+  const gymRev = sum(paymentsIn(range, { account: false }).filter(p => p.account !== "online"), p => p.amount);
+  const onRev = sum(paymentsIn(range, { account: false }).filter(p => p.account === "online"), p => p.amount);
+  const gSpend = adSpend(range, "gyms"), oSpend = adSpend(range, "online");
+  // entries in period
+  const calls = allCalls().filter(c => inRange(c.bookedOn, range) || (c.callDate && inRange(c.callDate, range))).sort((a, b) => (b.callDate || "").localeCompare(a.callDate || ""));
+  const leads = allLeads().filter(l => inRange(l.date, range)).sort((a, b) => b.date.localeCompare(a.date));
+  const delBtn = (kind, id, label) => admin && isLocal(kind, id) ? `<button class="link-btn no-print" type="button" data-del="${kind}" data-id="${esc(id)}" aria-label="Delete ${esc(label)}">Delete</button>` : "";
+  const when = c => c.callDate ? `${dShort(parse(c.callDate))} ${parse(c.callDate).getFullYear()}${c.callTime ? " · " + esc(c.callTime) : ""}` : "–";
+
+  return `
+  <div class="actions">
+    <button class="pill primary" type="button" data-add="lead">+ New lead</button>
+    <button class="pill primary" type="button" data-add="call">+ Call booked</button>
+    ${admin ? `<button class="pill primary" type="button" data-add="signup">+ Sign-up</button>` : ""}
+    <span class="muted" style="font-size:12px">Demo: entries are saved in this browser only.</span>
+  </div>
+  <div class="grid g-tiles">
+    ${tile("New leads", f.leads, delta(f.leads, pf.leads, { money: false }))}
+    ${tile("Calls booked", f.booked, delta(f.booked, pf.booked, { money: false }))}
+    ${tile("Show-up rate", fmtPct(show), `<span class="muted">${f.showed} of ${f.booked} showed</span>`)}
+    ${tile("Sign-ups", f.closes, delta(f.closes, pf.closes, { money: false }))}
+    ${tile("Closing rate", fmtPct(close), `<span class="muted">sign-ups ÷ calls showed</span>`)}
+    ${tile("No-shows", f.noShows, delta(f.noShows, pf.noShows, { money: false, upGood: false }))}
+    ${tile("Cancellations", f.cancellations, delta(f.cancellations, pf.cancellations, { money: false, upGood: false }))}
+  </div>
+  <div class="section-gap"></div>
+  <div class="grid g-2e">
+    <div class="card">
+      <h2>Sales funnel · ${esc(periodLabel(state.periodType, state.periodKey))}</h2>
+      <p class="hint">Leads and calls entered here, plus earlier weeks from the outreach KPI tracker. Sign-ups are entered by hand.</p>
+      ${hbars(stages, { max: Math.max(f.leads, f.booked, 1) })}
+      <p class="hint" style="margin:14px 0 8px">Calls lost before the call</p>
+      ${hbars(lost, { max: Math.max(f.leads, f.booked, 1) })}
+    </div>
+    <div class="card">
+      <h2>Calls booked per week</h2>
+      <p class="hint">Last 12 weeks. Each column is calls booked, split into sign-ups and the rest.</p>
+      ${legend(tSeries)}
+      ${stackedColumns(trend, tSeries, { money: false, height: 200, width: 560 })}
+      ${tableView(["Week", "Leads", "Booked", "Showed", "No-shows", "Cancellations", "Sign-ups"], trend.map(r => [esc(r.sub), r.raw.leads, r.raw.booked, r.raw.showed, r.raw.noShows, r.raw.cancellations, r.raw.closes]), [1, 2, 3, 4, 5, 6])}
+    </div>
+  </div>
+  <div class="section-gap"></div>
+  <div class="card">
+    <h2>Calls <span class="count">${calls.length}</span></h2>
+    <p class="hint">Calls booked or held in this period. Update the status after each call; choosing "Closed" doesn't add a sign-up, so enter the sign-up too.</p>
+    <div class="table-wrap"><table data-title="Calls"><thead><tr><th>Call date</th><th>Lead</th><th>Contact</th><th>Booked on</th><th>Booked by</th><th>Status</th><th>Notes</th><th class="no-print"></th></tr></thead><tbody>
+    ${calls.map(c => `<tr><td style="white-space:nowrap">${when(c)}</td><td>${esc(c.leadName)}</td><td>${esc(c.contact || "–")}</td><td style="white-space:nowrap">${c.bookedOn ? dShort(parse(c.bookedOn)) : "–"}</td><td>${esc(c.bookedBy || "–")}</td>
+      <td><select data-callstatus="${esc(c.id)}" aria-label="Status for ${esc(c.leadName)}">${Object.entries(CALL_STATUS).map(([k, v]) => `<option value="${k}" ${k === c.status ? "selected" : ""}>${v}</option>`).join("")}</select></td>
+      <td>${esc(c.notes || "")}</td><td class="no-print">${delBtn("calls", c.id, "call with " + c.leadName)}</td></tr>`).join("") || `<tr><td colspan="8" class="empty">No calls in this period. Use "+ Call booked" to add one.</td></tr>`}
+    </tbody></table></div>
+  </div>
+  <div class="section-gap"></div>
+  <div class="card">
+    <h2>New leads <span class="count">${leads.length}</span></h2>
+    <p class="hint">Leads added in this period.</p>
+    <div class="table-wrap"><table data-title="New leads"><thead><tr><th>Date</th><th>Name</th><th>Contact</th><th>Source</th><th>Interested in</th><th>Added by</th><th>Notes</th><th class="no-print"></th></tr></thead><tbody>
+    ${leads.map(l => `<tr><td style="white-space:nowrap">${dShort(parse(l.date))} ${parse(l.date).getFullYear()}</td><td>${esc(l.name)}</td><td>${esc(l.contact || "–")}</td><td>${esc(l.source || "–")}</td><td>${esc(l.interest || "–")}</td><td>${esc(l.addedBy || "–")}</td><td>${esc(l.notes || "")}</td><td class="no-print">${delBtn("leads", l.id, "lead " + l.name)}</td></tr>`).join("") || `<tr><td colspan="8" class="empty">No leads in this period. Use "+ New lead" to add one.</td></tr>`}
+    </tbody></table></div>
+  </div>
+  ${admin ? `
+  <div class="section-gap"></div>
+  <div class="card">
+    <h2>Sign-ups <span class="count">${sus.length}</span></h2>
+    <p class="hint">Every sign-up is entered by hand. Revenue still comes from Stripe; this list is what was sold and by whom.</p>
+    <div class="table-wrap"><table data-title="Sign-ups"><thead><tr><th>Date</th><th>Client</th><th>Email</th><th>Program</th><th>Type</th><th>Account</th><th class="num">Contract</th><th class="num">Cash collected</th><th>Payment</th><th>Closed by</th><th>Source</th><th class="no-print"></th></tr></thead><tbody>
+    ${sus.slice().sort((a, b) => b.date.localeCompare(a.date)).map(s => `<tr><td style="white-space:nowrap">${dShort(parse(s.date))} ${parse(s.date).getFullYear()}</td><td>${esc(s.client)}</td><td>${esc(s.email || "–")}</td><td>${esc(s.program)}</td><td>${esc(s.offerType || "–")}</td><td>${esc(ACC[s.account]?.short || "–")}</td><td class="num">${aud(Number(s.total) || 0)}</td><td class="num">${aud(Number(s.cash) || 0)}</td><td>${esc(PAY_TYPES[s.paymentType] || "–")}</td><td>${esc(s.closedBy || "–")}</td><td>${esc(s.source || "–")}</td><td class="no-print">${delBtn("signups", s.id, "sign-up " + s.client)}</td></tr>`).join("") || `<tr><td colspan="12" class="empty">No sign-ups in this period. Use "+ Sign-up" to add one.</td></tr>`}
+    </tbody></table></div>
+  </div>` : ""}
+  <div class="section-gap"></div>
+  <div class="grid g-2e">
+    <div class="card">
+      <h2>Programs sold</h2>
+      <p class="hint">Sign-ups in this period, by program.</p>
+      ${progRows.length ? `<div class="table-wrap"><table data-title="Programs sold"><thead><tr><th>Program</th><th class="num">Sold</th>${admin ? `<th class="num">Contract value</th>` : ""}</tr></thead><tbody>${progRows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v.n}</td>${admin ? `<td class="num">${aud(v.value)}</td>` : ""}</tr>`).join("")}</tbody></table></div>` : `<div class="empty">No sign-ups in this period.</div>`}
+    </div>
+    ${admin ? `<div class="card">
+      <h2>Return on ad spend (ROAS)</h2>
+      <p class="hint">Collected revenue ÷ Meta ad spend, split between the gyms and online.</p>
+      <div class="table-wrap"><table data-title="ROAS"><thead><tr><th>Channel</th><th class="num">Revenue</th><th class="num">Ad spend</th><th class="num">ROAS</th></tr></thead><tbody>
+        <tr><td>Gyms (Claremont + Jolimont)</td><td class="num">${aud(gymRev)}</td><td class="num">${aud(gSpend)}</td><td class="num">${gSpend ? (gymRev / gSpend).toFixed(1) + "×" : "–"}</td></tr>
+        <tr><td>Online</td><td class="num">${aud(onRev)}</td><td class="num">${aud(oSpend)}</td><td class="num">${oSpend ? (onRev / oSpend).toFixed(1) + "×" : "–"}</td></tr>
+      </tbody></table></div>
+    </div>` : ""}
+  </div>`;
+}
+
+/* ---------- entry forms (modal) ---------- */
+const opt = (v, l, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(l)}</option>`;
+function openModal(html, cls = "") {
+  $("#modalBody").className = "dialog" + (cls ? " " + cls : "");
+  $("#modalBody").innerHTML = html;
+  $("#modal").classList.remove("hidden");
+  const first = $("#modalBody").querySelector("input, select, textarea"); if (first) first.focus();
+  $("#modalBody").querySelectorAll("[data-close]").forEach(b => b.onclick = closeModal);
+}
+function closeModal() { $("#modal").classList.add("hidden"); $("#modalBody").innerHTML = ""; const b = $("[data-add]"); if (b) b.focus(); }
+function leadOptions() {
+  const seen = new Set();
+  return allLeads().slice().reverse().filter(l => { const k = l.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 300)
+    .map(l => `<option value="${esc(l.name)}"></option>`).join("");
+}
+function openForm(kind) {
+  const me = state.user.name;
+  if (kind === "lead") openModal(`
+    <form id="entryForm" novalidate>
+      <h2 id="modalTitle">New lead</h2><p class="hint" style="margin:0">Added by ${esc(me)}.</p>
+      <div class="form-grid">
+        <label>Date<input type="date" name="date" value="${todayIso()}" required></label>
+        <label>Name *<input type="text" name="name" required maxlength="120"></label>
+        <label class="full">Contact (Instagram handle, phone or email)<input type="text" name="contact" maxlength="160"></label>
+        <label>Source<select name="source">${LEAD_SOURCES.map(s => opt(s, s, "Instagram DM")).join("")}</select></label>
+        <label>Interested in<select name="interest">${INTERESTS.map(s => opt(s, s, "Not sure yet")).join("")}</select></label>
+        <label class="full">Notes<textarea name="notes" maxlength="500"></textarea></label>
+      </div>
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save lead</button></div>
+    </form>`);
+  if (kind === "call") openModal(`
+    <form id="entryForm" novalidate>
+      <h2 id="modalTitle">Call booked</h2><p class="hint" style="margin:0">Booked by ${esc(me)}. A new name is also added as a lead.</p>
+      <div class="form-grid">
+        <label class="full">Lead name *<input type="text" name="leadName" list="leadList" required maxlength="120" autocomplete="off"><datalist id="leadList">${leadOptions()}</datalist></label>
+        <label>Call date *<input type="date" name="callDate" value="${todayIso()}" required></label>
+        <label>Time<input type="time" name="callTime"></label>
+        <label>Contact<input type="text" name="contact" maxlength="160"></label>
+        <label>Source (if new lead)<select name="source">${LEAD_SOURCES.map(s => opt(s, s, "Instagram DM")).join("")}</select></label>
+        <label class="full">Notes<textarea name="notes" maxlength="500"></textarea></label>
+      </div>
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save call</button></div>
+    </form>`);
+  if (kind === "change") openModal(`
+    <form id="entryForm" novalidate>
+      <h2 id="modalTitle">Termination, freeze or pause</h2><p class="hint" style="margin:0">Log it when you action the email in Momence. Logged by ${esc(me)}.</p>
+      <div class="form-grid">
+        <label>Member name *<input type="text" name="member" list="memberList" required maxlength="120" autocomplete="off"><datalist id="memberList">${DATA.members.map(m => `<option value="${esc(m.name)}"></option>`).join("")}</datalist></label>
+        <label>Email (unique identifier)<input type="email" name="email" maxlength="160"></label>
+        <label>Type *<select name="type">${Object.entries(CHANGE_TYPES).map(([k, v]) => opt(k, v, "freeze")).join("")}</select></label>
+        <label>Start date *<input type="date" name="start" value="${todayIso()}" required></label>
+        <label>End date<input type="date" name="end"><span class="muted" style="font-size:11.5px">Blank = open freeze or pause. Not used for terminations.</span></label>
+        <label>Reason<input type="text" name="reason" maxlength="120" placeholder="e.g. Travel, Medical, Moving"></label>
+        <label class="full">Notes<textarea name="notes" maxlength="500"></textarea></label>
+      </div>
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div>
+    </form>`);
+  if (kind === "signup") openModal(`
+    <form id="entryForm" novalidate>
+      <h2 id="modalTitle">New sign-up</h2><p class="hint" style="margin:0">Enter it from the sale details. Stripe stays the source of truth for payments.</p>
+      <div class="form-grid">
+        <label>Sign-up date *<input type="date" name="date" value="${todayIso()}" required></label>
+        <label>Client name *<input type="text" name="client" list="leadList" required maxlength="120" autocomplete="off"><datalist id="leadList">${leadOptions()}</datalist></label>
+        <label>Email * (unique identifier)<input type="email" name="email" required maxlength="160"></label>
+        <label>Instagram handle<input type="text" name="instagram" maxlength="60" placeholder="@handle"></label>
+        <label class="full">Program *<input type="text" name="program" required maxlength="120" placeholder="e.g. 12-Week Transformation"></label>
+        <label>Type<select name="offerType">${OFFER_TYPES.map(s => opt(s, s, "Custom program")).join("")}</select></label>
+        <label>Account *<select name="account">${ACCOUNTS.map(a => opt(a.id, a.name, "online")).join("")}</select></label>
+        <label>Contract value (AUD) *<input type="number" name="total" min="0" step="0.01" required></label>
+        <label>Cash collected today (AUD)<input type="number" name="cash" min="0" step="0.01" value="0"></label>
+        <label>Payment type<select name="paymentType">${Object.entries(PAY_TYPES).map(([k, v]) => opt(k, v, "full")).join("")}</select></label>
+        <label>Closed by<input type="text" name="closedBy" value="${esc(me)}" maxlength="80"></label>
+        <label>Lead source<select name="source">${LEAD_SOURCES.map(s => opt(s, s, "Instagram DM")).join("")}</select></label>
+        <label class="full">Notes (payment plan, coach, gym access)<textarea name="notes" maxlength="500"></textarea></label>
+      </div>
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save sign-up</button></div>
+    </form>`);
+  $("#entryForm").addEventListener("submit", e => { e.preventDefault(); submitForm(kind, new FormData(e.target)); });
+}
+function submitForm(kind, fd) {
+  const v = Object.fromEntries([...fd.entries()].map(([k, x]) => [k, String(x).trim()]));
+  const err = m => { $("#formErr").textContent = m; };
+  const okDate = s => /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const e = entries(), me = state.user.name;
+  if (kind === "lead") {
+    if (!v.name) return err("Enter the lead's name.");
+    if (!okDate(v.date)) return err("Enter a valid date.");
+    e.leads.push({ id: uid("l"), date: v.date, name: v.name, contact: v.contact, source: v.source, interest: v.interest, notes: v.notes, addedBy: me });
+  }
+  if (kind === "call") {
+    if (!v.leadName) return err("Enter the lead's name.");
+    if (!okDate(v.callDate)) return err("Enter a valid call date.");
+    if (!allLeads().some(l => l.name.toLowerCase() === v.leadName.toLowerCase()))
+      e.leads.push({ id: uid("l"), date: todayIso(), name: v.leadName, contact: v.contact, source: v.source, interest: "Not sure yet", notes: "", addedBy: me });
+    e.calls.push({ id: uid("c"), leadName: v.leadName, contact: v.contact, bookedOn: todayIso(), callDate: v.callDate, callTime: v.callTime, status: "booked", notes: v.notes, bookedBy: me });
+  }
+  if (kind === "signup") {
+    if (!v.client) return err("Enter the client's name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return err("Enter a valid email address.");
+    if (!v.program) return err("Enter the program.");
+    if (!okDate(v.date)) return err("Enter a valid sign-up date.");
+    const total = Number(v.total), cash = Number(v.cash || 0);
+    if (!(total > 0)) return err("Enter the contract value.");
+    if (cash < 0 || cash > total) return err("Cash collected must be between $0 and the contract value.");
+    if (allSignups().some(s => (s.email || "").toLowerCase() === v.email.toLowerCase() && s.program.toLowerCase() === v.program.toLowerCase() && s.date === v.date))
+      return err("This client already has a sign-up for this program on this date.");
+    const ig = cleanIG(v.instagram);
+    if (v.instagram && !igOk(ig)) return err("Enter a valid Instagram handle, e.g. @bbr.member");
+    e.signups.push({ id: uid("s"), date: v.date, client: v.client, email: v.email.toLowerCase(), instagram: ig, program: v.program, offerType: v.offerType, account: v.account, total, cash, paymentType: v.paymentType, closedBy: v.closedBy, source: v.source, notes: v.notes, enteredBy: me });
+  }
+  if (kind === "change") {
+    if (!v.member) return err("Enter the member's name.");
+    if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return err("Enter a valid email address.");
+    if (!okDate(v.start)) return err("Enter a valid start date.");
+    if (!CHANGE_TYPES[v.type]) return err("Choose a type.");
+    const end = v.type === "termination" ? "" : v.end;
+    if (end && (!okDate(end) || end <= v.start)) return err("The end date must be after the start date.");
+    e.changes.push({ id: uid("x"), member: v.member, email: v.email.toLowerCase(), type: v.type, start: v.start, end, reason: v.reason, notes: v.notes, loggedBy: me, loggedOn: todayIso() });
+  }
+  saveEntries(e); closeModal(); render();
+}
+
+/* ---------- export (PDF via print, CSV of the current tab) ---------- */
+function cellText(td) {
+  const sel = td.querySelector("select"); if (sel) return sel.options[sel.selectedIndex]?.text || "";
+  const cb = td.querySelector('input[type="checkbox"]'); if (cb) return td.querySelector(".toggle") ? (cb.checked ? "Active" : "Inactive") : (cb.checked ? "Yes" : "No");
+  const inp = td.querySelector("input"); if (inp) return inp.value;
+  return td.textContent.replace(/\s+/g, " ").trim();
+}
+function exportHeader() {
+  const tab = TABS.find(t => t.id === state.tab).label;
+  const acct = state.account === "all" ? "All accounts" : ACC[state.account].name;
+  return { tab, period: periodLabel(state.periodType, state.periodKey), acct };
+}
+function exportCSV() {
+  const h = exportHeader();
+  const rows = [["Bodies by Ryan · " + h.tab], ["Period", h.period], ["Account", h.acct], ["Exported by", state.user.name], ["Exported at", new Date().toLocaleString("en-AU")], []];
+  const tiles = [...document.querySelectorAll("#view .tile")];
+  if (tiles.length) {
+    rows.push(["Summary"], ["Measure", "Value", "Detail"]);
+    tiles.forEach(t => rows.push([t.querySelector(".label")?.textContent.trim(), t.querySelector(".value")?.textContent.trim(), t.querySelector(".delta")?.textContent.replace(/\s+/g, " ").trim()]));
+    rows.push([]);
+  }
+  document.querySelectorAll("#view table").forEach(tbl => {
+    const title = tbl.dataset.title || tbl.closest(".card")?.querySelector("h2")?.textContent.replace(/\s+/g, " ").trim() || "Table";
+    rows.push([title]);
+    tbl.querySelectorAll("tr").forEach(tr => {
+      const cells = [...tr.children].filter(c => !c.classList.contains("no-print")).map(cellText);
+      if (cells.length === 1 && tr.querySelector(".empty")) return;
+      rows.push(cells);
+    });
+    rows.push([]);
+  });
+  const safe = v => { let s = String(v ?? ""); if (/^[=+@\t\r]/.test(s) || /^-[^\d$]/.test(s)) s = "'" + s; return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = "﻿" + rows.map(r => r.map(safe).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = `bbr-${state.tab}-${state.periodKey}.csv`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function exportPDF() {
+  const h = exportHeader();
+  $("#printHead").innerHTML = `<span class="logo" role="img" aria-label="BBR" style="float:right"></span><h1>Bodies by Ryan · ${esc(h.tab)}</h1><div class="muted">${esc(h.period)} · ${esc(h.acct)} · exported ${esc(new Date().toLocaleString("en-AU"))} by ${esc(state.user.name)}</div>`;
+  window.print();
+}
+
+function changesCard() {
+  const list = upcomingChanges(LOOKAHEAD_DAYS);
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  const soon = list.filter(c => parse(c.start) <= addDays(t, CHANGE_WINDOW_DAYS)).length;
+  const counts = Object.keys(CHANGE_TYPES).map(k => `${list.filter(c => c.type === k).length} ${CHANGE_TYPES[k].toLowerCase()}${k === "termination" ? "s" : "s"}`).join(" · ");
+  let month = "", rows = "";
+  list.forEach(c => {
+    const mk = parse(c.start).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+    if (mk !== month) { month = mk; rows += `<tr class="month-row"><td colspan="9">${esc(mk)}</td></tr>`; }
+    const lost = changeLost(c);
+    rows += `<tr><td style="white-space:nowrap">${dShort(parse(c.start))}</td><td>${esc(c.member)}${c.m ? "" : ` <span class="muted">(not matched)</span>`}</td>
+      <td><span class="type-chip type-${esc(c.type)}">${CHANGE_TYPES[c.type] || esc(c.type)}</span></td><td>${esc(changeLength(c))}</td>
+      <td>${esc(ACC[c.m?.homeGym]?.short || "–")}</td><td>${c.m?.since ? esc(tenure(c.m.since)) : "–"}</td>
+      <td class="num">${lost ? `${aud(lost.v)} <span class="muted">${lost.per}</span>` : "–"}</td><td>${esc(c.reason || "")}</td><td>${igLink(c.member)}</td></tr>`;
+  });
+  return `<div class="card" id="c-changes">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div><h2>Terminations, freezes and pauses starting soon <span class="count">${list.length}</span></h2>
+      <p class="hint">Next 2 months, grouped by month. ${soon} start in the next ${CHANGE_WINDOW_DAYS} days · ${counts}. Contact long-term members before their date.</p></div>
+      <button class="pill primary" type="button" data-add="change">+ Termination / freeze / pause</button>
+    </div>
+    <div class="table-wrap"><table data-title="Terminations, freezes and pauses"><thead><tr><th>Starts</th><th>Member</th><th>Type</th><th>Length</th><th>Home gym</th><th>Member for</th><th class="num">Lost cash flow</th><th>Reason</th><th>Instagram</th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="9" class="empty">Nothing scheduled in the next 2 months.</td></tr>`}</tbody></table></div>
+  </div>`;
+}
+
+/* ---------- clients: one list built from members, custom-program payments and sign-ups ---------- */
+const NOTE_KINDS = { update: "Update", change: "Change", payment: "Payment", other: "Other" };
+function allClients() {
+  const list = [], byEmail = new Map(), byName = new Map();
+  /* Match by email first; fall back to name only when one side has no email, so two people with the same name stay separate */
+  const find = (name, email) => {
+    const e = email ? email.toLowerCase() : "";
+    const byE = e && byEmail.get(e); if (byE) return byE;
+    const byN = byName.get(String(name || "").trim().toLowerCase());
+    return byN && (!e || !byN.email) ? byN : null;
+  };
+  const get = (name, email) => {
+    let c = find(name, email);
+    if (!c) {
+      c = { key: email ? "e:" + email.toLowerCase() : "n:" + String(name).trim().toLowerCase(), name: String(name).trim(), email: "", instagram: "",
+            homeGym: "", crossGym: false, member: null, programs: [], signups: [], since: "" };
+      list.push(c); if (!byName.has(c.name.toLowerCase())) byName.set(c.name.toLowerCase(), c);
+    }
+    if (email && !c.email) { c.email = email.toLowerCase(); byEmail.set(c.email, c); }
+    return c;
+  };
+  const earliest = (a, b) => !a ? b : !b ? a : a < b ? a : b;
+  DATA.members.forEach(m => {
+    const c = get(m.name, m.email); c.member = m; c.homeGym = c.homeGym || m.homeGym; c.crossGym = c.crossGym || !!m.crossGym;
+    c.instagram = c.instagram || cleanIG(m.instagram); c.since = earliest(c.since, m.since);
+  });
+  // custom offers grouped by person + program, so instalment offers 1/2 and 2/2 become one contract
+  const groups = new Map();
+  DATA.offers.filter(o => o.kind === "custom").forEach(o => {
+    const mm = o.title.match(NAME_RE); if (!mm) return;
+    const k = mm[1].trim().toLowerCase() + "|" + mm[2].trim().toLowerCase();
+    if (!groups.has(k)) groups.set(k, { person: mm[1].trim(), program: mm[2].trim(), offers: [] });
+    groups.get(k).offers.push(o);
+  });
+  groups.forEach(g => {
+    const c = get(g.person);
+    const ids = new Set(g.offers.map(o => o.id));
+    const payments = DATA.payments.filter(p => ids.has(p.offerId)).sort((a, b) => a.date.localeCompare(b.date));
+    const o0 = g.offers[0];
+    const contract = g.offers.length > 1 ? sum(g.offers, o => o.price) : Number(o0.price) || 0;
+    c.programs.push({ program: g.program, offers: g.offers, account: o0.account, duration: o0.duration, paymentType: o0.paymentType, contract, payments, created: o0.created });
+    c.homeGym = c.homeGym || o0.homeGym; c.crossGym = c.crossGym || !!o0.crossGym; c.since = earliest(c.since, o0.created);
+    const ig = payments.find(p => p.instagram); if (ig) c.instagram = c.instagram || cleanIG(ig.instagram);
+  });
+  allSignups().forEach(s => {
+    const c = get(s.client, s.email); c.signups.push(s); c.since = earliest(c.since, s.date);
+    c.instagram = c.instagram || cleanIG(s.instagram);
+    if (!c.homeGym && s.account !== "online") c.homeGym = s.account;
+  });
+  list.forEach(c => {
+    const pays = c.programs.flatMap(p => p.payments);
+    c.collected = sum(pays.filter(p => p.status === "collected"), p => p.amount);
+    c.outstanding = sum(pays.filter(p => p.status === "outstanding"), p => p.amount);
+    c.scheduled = sum(pays.filter(p => p.status === "scheduled"), p => p.amount);
+    c.status = c.member ? c.member.status : "active";
+    c.type = c.member && c.programs.length ? "Membership + program" : c.member ? "Gym membership"
+      : c.programs.some(p => p.account === "online") || c.signups.some(s => s.offerType === "Online program") ? "Online / custom program" : "Custom program";
+    c.offer = c.member ? (DATA.offers.find(o => o.id === c.member.offerId)?.title || c.member.offerId) : (c.programs[0]?.program || c.signups[0]?.program || "–");
+  });
+  return list;
+}
+function clientNotes(c) {
+  return [...DATA.notes, ...entries().notes].filter(n => n.clientKey === c.key || (n.client || "").trim().toLowerCase() === c.name.toLowerCase())
+    .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+
+function viewClients() {
+  const s = store();
+  const fStatus = s.memberStatus || "all", fType = s.clientType || "all", q = (s.memberQ || "").toLowerCase();
+  const clients = allClients().filter(c => state.account === "all" || c.homeGym === state.account || c.programs.some(p => p.account === state.account));
+  const shown = clients.filter(c => (fStatus === "all" || c.status === fStatus)
+      && (fType === "all" || (fType === "member" ? !!c.member : c.programs.length || c.signups.length))
+      && (!q || [c.name, c.email, c.instagram].join(" ").toLowerCase().includes(q)))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const count = st => clients.filter(c => c.status === st).length;
+  const ch = churn();
+  const lastNote = c => { const n = clientNotes(c)[0]; return n ? dShort(new Date(n.at)) : "–"; };
+  return `
+  <div class="grid g-tiles">
+    ${tile("Clients", clients.length, `<span class="muted">${clients.filter(c => c.member).length} gym members · ${clients.filter(c => c.programs.length).length} on programs</span>`)}
+    ${tile("Active", count("active"))}
+    ${tile("Suspended", count("suspended"), `<span class="muted">${aud(ch.lostCash)} lost cash flow</span>`)}
+    ${tile("Terminated", count("terminated"))}
+    ${tile("Free gym access", count("free"))}
+  </div>
+  <div class="section-gap"></div>
+  ${changesCard()}
+  <div class="section-gap"></div>
+  <div class="card" id="c-all">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div><h2>All clients <span class="count">${shown.length} of ${clients.length}</span></h2>
+      <p class="hint">Gym members, custom and online program clients, and sign-ups in one list. Click a client for their details and notes.</p></div>
+      <div class="row">
+        <input type="search" id="memberQ" placeholder="Search name, email or IG" value="${esc(s.memberQ || "")}" aria-label="Search clients">
+        <select id="memberStatus" aria-label="Filter by status">${["all", "active", "suspended", "terminated", "free"].map(v => `<option value="${v}" ${v === fStatus ? "selected" : ""}>${v === "all" ? "All statuses" : STATUS_LABEL[v]}</option>`).join("")}</select>
+        <select id="clientType" aria-label="Filter by type">${[["all", "All types"], ["member", "Gym members"], ["program", "Programs"]].map(([v, l]) => `<option value="${v}" ${v === fType ? "selected" : ""}>${l}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="table-wrap"><table data-title="All clients"><thead><tr><th>Client</th><th>Type</th><th>Status</th><th>Membership / program</th><th>Home gym</th><th>Client for</th><th class="num">Collected</th><th class="num">Outstanding</th><th>Last note</th></tr></thead>
+    <tbody>${shown.slice(0, 500).map(c => `<tr class="client-row" data-client="${esc(c.key)}">
+      <td><button type="button" class="client-link" data-client="${esc(c.key)}">${esc(c.name)}</button></td><td>${esc(c.type)}</td><td>${statusChip(c.status)}</td>
+      <td>${esc(c.offer)}${c.programs.length + (c.member ? 1 : 0) > 1 ? ` <span class="muted">+${c.programs.length + (c.member ? 1 : 0) - 1}</span>` : ""}</td>
+      <td>${esc(ACC[c.homeGym]?.short || "–")}</td><td>${c.since ? esc(tenure(c.since)) : "–"}</td>
+      <td class="num">${c.collected ? aud(c.collected) : "–"}</td><td class="num">${c.outstanding ? `<span class="warn-text">${aud(c.outstanding)}</span>` : "–"}</td><td>${lastNote(c)}</td></tr>`).join("")
+      || `<tr><td colspan="9" class="empty">No clients match.</td></tr>`}</tbody></table></div>
+  </div>`;
+}
+const statusChip = st => { const c = { active: "var(--good)", suspended: "var(--warning)", terminated: "var(--critical)", free: "var(--muted)" }[st] || "var(--muted)"; return `<span class="chip"><span class="dot" style="background:${c}"></span>${STATUS_LABEL[st] || esc(st)}</span>`; };
+
+/* ---------- client details (modal) ---------- */
+function openClient(key) {
+  const c = allClients().find(x => x.key === key); if (!c) return;
+  const m = c.member;
+  const day = d => d ? `${dShort(parse(d))} ${parse(d).getFullYear()}` : "–";
+  const field = (l, v) => `<div class="kv"><div class="k">${l}</div><div class="v">${v}</div></div>`;
+  const changes = allChanges().filter(x => x.m === m && m || (x.member || "").toLowerCase() === c.name.toLowerCase()).sort((a, b) => b.start.localeCompare(a.start));
+  const lost = m && m.status === "suspended" ? churn().lost(m) : 0;
+  const s0 = c.signups[0];
+  const pays = c.programs.flatMap(p => p.payments.map(x => ({ ...x, program: p.program }))).sort((a, b) => b.date.localeCompare(a.date));
+  const payStatus = st => ({ collected: `<span class="up">Collected</span>`, outstanding: `<span class="warn-text">Not collected</span>`, scheduled: `<span class="muted">Scheduled</span>` }[st] || esc(st));
+  openModal(`
+    <div class="client-head">
+      <div><h2 id="modalTitle" style="text-transform:none;letter-spacing:0;font-size:20px">${esc(c.name)}</h2>
+      <div class="row" style="gap:8px;margin-top:4px">${statusChip(c.status)}<span class="muted">${esc(c.type)}</span>${c.since ? `<span class="muted">· client for ${esc(tenure(c.since))}</span>` : ""}</div></div>
+      <button class="btn" type="button" data-close aria-label="Close client details">Close</button>
+    </div>
+    <div class="kv-grid">
+      ${field("Email", c.email ? esc(c.email) : `<span class="muted">Not recorded</span>`)}
+      ${field("Instagram", igLink(c.name))}
+      ${field("Home gym", esc(ACC[c.homeGym]?.short || "–"))}
+      ${field("Cross-gym access", c.crossGym ? "Yes" : "No")}
+      ${m ? field("Membership", esc(DATA.offers.find(o => o.id === m.offerId)?.title || m.offerId)) : ""}
+      ${m ? field("Price", `${aud(m.price, 2)} / ${esc(m.billing || "fortnight")} · ${m.upfront ? "Paid upfront" : "Recurring"}`) : ""}
+      ${m ? field("Member since", day(m.since)) : ""}
+      ${lost ? field("Lost cash flow", `${aud(lost, 2)} <span class="muted">(${m.suspensionWeeks} weeks suspended)</span>`) : ""}
+      ${s0 ? field("Signed up", `${day(s0.date)} · closed by ${esc(s0.closedBy || "–")}`) : ""}
+      ${s0 ? field("Lead source", esc(s0.source || "–")) : ""}
+      ${c.programs.length ? field("Program totals", `${aud(c.collected)} collected · ${c.outstanding ? `<span class="warn-text">${aud(c.outstanding)} not collected</span>` : "nothing overdue"} · ${aud(c.scheduled)} scheduled`) : ""}
+    </div>
+    ${changes.length ? `<h3 class="sub-h">Terminations, freezes and pauses</h3>
+      <div class="table-wrap"><table><thead><tr><th>Starts</th><th>Type</th><th>Length</th><th>Reason</th><th>Logged by</th></tr></thead><tbody>
+      ${changes.map(x => `<tr><td>${day(x.start)}</td><td><span class="type-chip type-${esc(x.type)}">${CHANGE_TYPES[x.type] || esc(x.type)}</span></td><td>${esc(changeLength(x))}</td><td>${esc(x.reason || "")}</td><td>${esc(x.loggedBy || "–")}</td></tr>`).join("")}
+      </tbody></table></div>` : ""}
+    ${c.programs.length ? `<h3 class="sub-h">Programs and payments</h3>
+      <div class="table-wrap"><table><thead><tr><th>Program</th><th>Account</th><th>Duration</th><th>Payment</th><th class="num">Contract</th></tr></thead><tbody>
+      ${c.programs.map(p => `<tr><td>${esc(p.program)}</td><td>${esc(ACC[p.account]?.short || "–")}</td><td>${esc(p.duration || "–")}</td><td>${esc(PAY_TYPES[p.paymentType] || "–")}</td><td class="num">${aud(p.contract)}</td></tr>`).join("")}
+      </tbody></table></div>
+      <div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Date</th><th>Program</th><th>Instalment</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>
+      ${pays.map(p => `<tr><td>${day(p.date)}</td><td>${esc(p.program)}</td><td>${p.instalment ? `${p.instalment} of ${p.of}` : "–"}</td><td class="num">${aud(p.amount, 2)}</td><td>${payStatus(p.status)}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">No payments yet.</td></tr>`}
+      </tbody></table></div>` : ""}
+    <h3 class="sub-h">Notes <span class="count" id="noteCount"></span></h3>
+    <form id="noteForm" novalidate>
+      <div class="form-grid" style="grid-template-columns:160px 1fr;margin-top:0">
+        <label>Type<select name="kind">${Object.entries(NOTE_KINDS).map(([k, v]) => opt(k, v, "update")).join("")}</select></label>
+        <label>Note<textarea name="text" maxlength="1000" placeholder="e.g. Asked to move to Jolimont from 1 Dec; payment plan changed to 3 instalments"></textarea></label>
+      </div>
+      <div class="err" id="noteErr" role="alert"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn primary" type="submit">Add note</button></div>
+    </form>
+    <div id="noteList"></div>
+  `, "wide");
+  const draw = () => {
+    const notes = clientNotes(c);
+    $("#noteCount").textContent = notes.length || "";
+    $("#noteList").innerHTML = notes.map(n => `<div class="note"><div class="note-meta"><span class="note-kind">${esc(NOTE_KINDS[n.kind] || n.kind || "Note")}</span>
+      <span>${esc(new Date(n.at).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }))} · ${esc(n.by || "–")}</span>
+      ${isAdmin() && isLocal("notes", n.id) ? `<button type="button" class="link-btn" data-delnote="${esc(n.id)}">Delete</button>` : ""}</div>
+      <div class="note-text">${esc(n.text).replace(/\n/g, "<br>")}</div></div>`).join("") || `<p class="muted" style="margin:8px 0 0">No notes yet.</p>`;
+    $("#noteList").querySelectorAll("[data-delnote]").forEach(b => b.onclick = () => { const e = entries(); e.notes = e.notes.filter(x => x.id !== b.dataset.delnote); saveEntries(e); draw(); render(); });
+  };
+  draw();
+  $("#noteForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const fd = new FormData(ev.target), text = String(fd.get("text") || "").trim();
+    if (!text) { $("#noteErr").textContent = "Write the note first."; return; }
+    const e = entries();
+    e.notes.push({ id: uid("n"), clientKey: c.key, client: c.name, kind: String(fd.get("kind")), text, by: state.user.name, at: new Date().toISOString() });
+    saveEntries(e); ev.target.reset(); $("#noteErr").textContent = ""; draw(); render();
+  });
+}
+
+function viewProducts() {
+  const s = store();
+  const overrides = s.offerActive || {};
+  const q = (s.offerQ || "").toLowerCase();
+  const fAct = s.offerFilter || "all";
+  const offers = DATA.offers.map(o => ({ ...o, active: overrides[o.id] ?? o.active }))
+    .filter(o => (state.account === "all" || o.account === state.account) && (!q || o.title.toLowerCase().includes(q)) && (fAct === "all" || (fAct === "active" ? o.active : fAct === "inactive" ? !o.active : (!o.confirmed || !o.paymentType))));
+  const accSel = v => `<span>${esc(ACC[v]?.short || "–")}</span>`;
+  const gym = (v, o) => v ? esc(ACC[v]?.short || v) : o.account === "online" && o.paymentType ? "–" : `<span class="warn-text">Missing</span>`;
+  const std = DATA.offers.filter(o => o.kind !== "custom");
+  return `
+  <div class="grid g-2e">
+    <div class="card">
+      <h2>Standard prices (AUD)</h2>
+      <p class="hint">Student GFM and family pricing still to confirm.</p>
+      <table><tbody>
+        <tr><td>GFM Claremont</td><td class="num">$159.98 / fortnight</td></tr>
+        <tr><td>GFM Jolimont</td><td class="num">$149.98 / fortnight</td></tr>
+        <tr><td>Casual Pass</td><td class="num">$300 / 10 sessions</td></tr>
+        <tr><td>Student GFM</td><td class="num warn-text">To confirm</td></tr>
+        <tr><td>Family pricing</td><td class="num warn-text">To confirm</td></tr>
+      </tbody></table>
+    </div>
+    ${offerBuilder()}
+  </div>
+  <div class="section-gap"></div>
+  <div class="grid">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><h2>All offers <span class="count">${offers.length} of ${DATA.offers.length}</span></h2><p class="hint">Title, created date and price come from Stripe. Account type, payment type, duration, billing, home gym and cross-gym access are filled in by hand; Ryan confirms each match.</p></div>
+        <div class="row">
+          <input type="search" id="offerQ" placeholder="Search offers" value="${esc(s.offerQ || "")}" aria-label="Search offers">
+          <select id="offerFilter" aria-label="Filter offers">${[["all", "All offers"], ["active", "Active"], ["inactive", "Inactive"], ["todo", "Needs details"]].map(([v, l]) => `<option value="${v}" ${v === fAct ? "selected" : ""}>${l}</option>`).join("")}</select>
+        </div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th style="text-align:center">Active</th><th>Offer</th><th>Created</th><th class="num">Price</th><th>Account</th><th>Payment type</th><th>Duration</th><th>Billing</th><th>Home gym</th><th>Cross-gym</th><th>Checks</th></tr></thead><tbody>
+      ${offers.slice(0, 400).map(o => {
+        const issues = [];
+        if (o.kind === "custom" && !NAME_RE.test(o.title)) issues.push("Name doesn't follow [Person] – [Program] – n/total");
+        if (!o.paymentType) issues.push("Payment type missing");
+        if (!o.confirmed) issues.push("Waiting for Ryan's confirmation");
+        if (o.transfer && !o.transfer.confirmed) issues.push(`Transfer to ${ACC[o.transfer.to]?.short || "?"} not confirmed`);
+        return `<tr><td class="toggle-cell"><label class="toggle" title="${o.active ? "Active" : "Inactive"}"><input type="checkbox" data-offer="${esc(o.id)}" ${o.active ? "checked" : ""} aria-label="Active: ${esc(o.title)}"><span></span></label></td>
+        <td style="min-width:220px">${esc(o.title)}</td><td style="white-space:nowrap">${dShort(parse(o.created))} ${parse(o.created).getFullYear()}</td><td class="num">${o.price == null ? `<span class="warn-text">To confirm</span>` : aud(o.price, o.price % 1 ? 2 : 0)}</td>
+        <td>${accSel(o.account)}</td><td>${o.paymentType ? esc({ full: "Paid in full", instalments: "Instalments", recurring: "Recurring" }[o.paymentType] || o.paymentType) : `<span class="warn-text">Missing</span>`}</td>
+        <td>${esc(o.duration || "–")}</td><td>${esc(o.billing || "–")}</td><td>${gym(o.homeGym, o)}</td><td>${o.crossGym ? "Yes" : "No"}</td>
+        <td>${issues.length ? `<span class="warn-text">${issues.map(esc).join("<br>")}</span>` : `<span class="up">OK</span>`}</td></tr>`;
+      }).join("") || `<tr><td colspan="11" class="empty">No offers match.</td></tr>`}
+      </tbody></table></div>
+      <p class="hint" style="margin-top:8px">Active/inactive changes are saved in this browser only. Write them back to the data source to keep them for everyone.</p>
+    </div>
+  </div>`;
+}
+
+function offerBuilder() {
+  const s = store(); const b = s.builder || { name: "", total: "", deposit: "", count: 2, start: iso(new Date()), rows: [] };
+  const okName = !b.name || NAME_RE.test(b.name);
+  const rows = b.rows || [];
+  const totalRows = sum(rows, r => r.amount);
+  return `<div class="card" id="builder">
+    <h2>Offer builder (split payments)</h2>
+    <p class="hint">Enter the total, deposit and number of instalments to create one row per payment. Set dates and amounts by hand, since every offer is custom.</p>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+      <label style="grid-column:1/-1" class="muted">Offer name
+        <input type="text" id="bName" value="${esc(b.name)}" placeholder="Person – Program – 1/2" style="width:100%">
+        <span class="warn-text ${okName ? "hidden" : ""}" id="bNameWarn">Use [Person] – [Program] – [instalment]/[total], e.g. 1/2</span>
+      </label>
+      <label class="muted">Total contract price<input type="number" id="bTotal" min="0" step="0.01" value="${esc(b.total)}" style="width:100%"></label>
+      <label class="muted">Deposit<input type="number" id="bDeposit" min="0" step="0.01" value="${esc(b.deposit)}" style="width:100%"></label>
+      <label class="muted">Number of payments (incl. deposit)<input type="number" id="bCount" min="1" max="24" value="${esc(b.count)}" style="width:100%"></label>
+      <label class="muted">First payment date<input type="date" id="bStart" value="${esc(b.start)}" style="width:100%"></label>
+    </div>
+    <div class="row" style="margin:10px 0"><button class="btn primary" type="button" id="bMake">Create payment rows</button><button class="btn" type="button" id="bClear">Clear</button>${rows.length ? `<button class="btn" type="button" id="bExport">Copy as JSON</button>` : ""}</div>
+    ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>#</th><th class="num">Amount</th><th>Collection date</th><th>Collected</th><th>Notes</th></tr></thead><tbody>
+      ${rows.map((r, i) => `<tr><td>${i + 1}</td><td class="num"><input type="number" step="0.01" data-row="${i}" data-f="amount" value="${r.amount}" style="width:100px;text-align:right"></td><td><input type="date" data-row="${i}" data-f="date" value="${esc(r.date)}"></td><td><input type="checkbox" data-row="${i}" data-f="collected" ${r.collected ? "checked" : ""} aria-label="Payment ${i + 1} collected"></td><td><input type="text" data-row="${i}" data-f="notes" value="${esc(r.notes)}" placeholder="${i === 0 ? "Deposit" : ""}"></td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="hint" style="margin-top:6px">Rows add up to ${aud(totalRows, 2)}${b.total && Math.abs(totalRows - Number(b.total)) > 0.01 ? ` <span class="warn-text">(contract is ${aud(Number(b.total), 2)})</span>` : ""}. Live offers tick "Collected" automatically when the Stripe payment lands.</p>` : ""}
+  </div>`;
+}
+
+function viewReports() {
+  const range = periodRange(state.periodType, state.periodKey);
+  const rows = ACCOUNTS.filter(a => state.account === "all" || a.id === state.account).map(a => {
+    const ps = DATA.payments.filter(p => p.account === a.id && inRange(p.date, range));
+    return { a, collected: sum(ps.filter(p => p.status === "collected"), p => p.amount), outstanding: sum(ps.filter(p => p.status === "outstanding"), p => p.amount), scheduled: sum(ps.filter(p => p.status === "scheduled"), p => p.amount), n: ps.filter(p => p.status === "collected").length };
+  });
+  const fees = feeIncome(range);
+  const months = monthlyRows(6);
+  const series = accountSeries();
+  const outstanding = DATA.payments.filter(p => p.status === "outstanding" && byAccount(p)).sort((a, b) => a.date.localeCompare(b.date));
+  return `
+  <div class="grid g-tiles">
+    ${tile("Collected", aud(sum(rows, r => r.collected)), `<span class="muted">${esc(periodLabel(state.periodType, state.periodKey))}</span>`)}
+    ${tile("Outstanding", aud(sum(rows, r => r.outstanding)), `<span class="muted">due in period, not collected</span>`)}
+    ${tile("Fee income (net)", aud(fees.net), `<span class="muted">${aud(fees.waived)} waived or refunded</span>`)}
+    ${tile("Meta ad spend", aud(adSpend(range)))}
+  </div>
+  <div class="section-gap"></div>
+  <div class="grid g-2e">
+    <div class="card">
+      <h2>Revenue by account</h2>
+      <p class="hint">${esc(periodLabel(state.periodType, state.periodKey))}. Gym sales taken through the online account stay under Online until the transfer is confirmed.</p>
+      <div class="table-wrap"><table><thead><tr><th>Account</th><th class="num">Payments</th><th class="num">Collected</th><th class="num">Outstanding</th><th class="num">Scheduled</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><span class="row" style="gap:6px"><span class="dot" style="background:${r.a.color}"></span>${esc(r.a.name)}</span></td><td class="num">${r.n}</td><td class="num">${aud(r.collected)}</td><td class="num">${aud(r.outstanding)}</td><td class="num">${aud(r.scheduled)}</td></tr>`).join("")}
+      <tr><td><strong>Total</strong></td><td class="num"><strong>${sum(rows, r => r.n)}</strong></td><td class="num"><strong>${aud(sum(rows, r => r.collected))}</strong></td><td class="num"><strong>${aud(sum(rows, r => r.outstanding))}</strong></td><td class="num"><strong>${aud(sum(rows, r => r.scheduled))}</strong></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <h2>Fee income (Momence)</h2>
+      <p class="hint">Late cancel within 8 hours of class $15 · No-show $30. Reported net of waived and refunded fees.</p>
+      <table><tbody>
+        <tr><td>Late cancels charged</td><td class="num">${fees.late}</td><td class="num">${aud(fees.late * FEES.late_cancel)}</td></tr>
+        <tr><td>No-shows charged</td><td class="num">${fees.noshow}</td><td class="num">${aud(fees.noshow * FEES.no_show)}</td></tr>
+        <tr><td>Waived or refunded</td><td class="num">${fees.rows.filter(x => x.waived).length}</td><td class="num">−${aud(fees.waived)}</td></tr>
+        <tr><td><strong>Net fee income</strong></td><td></td><td class="num"><strong>${aud(fees.net)}</strong></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="section-gap"></div>
+  <div class="card">
+    <h2>Monthly sales by account</h2>
+    <p class="hint">Last 6 months, collected payments.</p>
+    ${series.length > 1 ? legend(series) : ""}
+    ${stackedColumns(months, series, { height: 260, width: 1180 })}
+    ${tableView(["Month", ...series.map(s => s.name), "Total", "Ad spend", "Money in − out"], months.map(r => { const t = sum(series, s => r.values[s.key] || 0), sp = adSpend(r.range); return [esc(r.sub), ...series.map(s => aud(r.values[s.key] || 0)), aud(t), aud(sp), aud(t - sp)]; }), [1, 2, 3, 4, 5, 6])}
+  </div>
+  <div class="section-gap"></div>
+  <div class="card" id="r-outstanding">
+    <h2>Payments not yet collected <span class="count">${outstanding.length}</span></h2>
+    <p class="hint">All periods. Message the client on Instagram, then mark it as collected in Stripe.</p>
+    <div class="table-wrap"><table data-title="Payments not yet collected"><thead><tr><th>Due</th><th>Client</th><th>Instagram</th><th>Offer</th><th>Account</th><th class="num">Amount</th></tr></thead><tbody>
+    ${outstanding.map(p => { const o = DATA.offers.find(x => x.id === p.offerId); return `<tr><td>${dShort(parse(p.date))} ${parse(p.date).getFullYear()}</td><td>${esc(p.client)}</td><td>${igLink(p.client)}</td><td>${esc(o ? o.title : "")}${p.instalment ? ` <span class="muted">(${p.instalment}/${p.of})</span>` : ""}</td><td>${esc(ACC[p.account]?.short || "–")}</td><td class="num">${aud(p.amount, 2)}</td></tr>`; }).join("") || `<tr><td colspan="6" class="empty">All payments collected.</td></tr>`}
+    </tbody></table></div>
+  </div>
+  ${reportExtras()}`;
+}
+
+/* Cards the notifications link to: upcoming collections, transfers, Slack and Stripe mismatches */
+function reportExtras() {
+  const n = notifications();
+  const day = d => `${dShort(parse(d))} ${parse(d).getFullYear()}`;
+  return `
+  <div class="section-gap"></div>
+  <div class="card" id="r-upcoming">
+    <h2>Upcoming collections, next 14 days <span class="count">${n.upcoming.length}</span></h2>
+    <p class="hint">Scheduled instalments and subscription charges. ${aud(sum(n.upcoming, p => p.amount))} due.</p>
+    <div class="table-wrap"><table data-title="Upcoming collections"><thead><tr><th>Due</th><th>Client</th><th>Instagram</th><th>Account</th><th>Payment</th><th class="num">Amount</th></tr></thead><tbody>
+    ${n.upcoming.map(p => `<tr><td>${day(p.date)}</td><td>${esc(p.client)}</td><td>${igLink(p.client)}</td><td>${esc(ACC[p.account]?.short || "–")}</td><td>${p.instalment ? `${p.instalment} of ${p.of}` : "–"}</td><td class="num">${aud(p.amount, 2)}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">Nothing due in the next 14 days.</td></tr>`}
+    </tbody></table></div>
+  </div>
+  <div class="section-gap"></div>
+  <div class="card" id="r-transfers">
+    <h2>Transfers between accounts waiting <span class="count">${n.transfers.length}</span></h2>
+    <p class="hint">Gym sales taken through the online account (e.g. Black Friday). They stay under Online until accounting confirms the transfer.</p>
+    <div class="table-wrap"><table data-title="Transfers waiting"><thead><tr><th>Paid</th><th>Client</th><th>From</th><th>To</th><th>On Sheila's list</th><th class="num">Amount</th></tr></thead><tbody>
+    ${n.transfers.map(p => `<tr><td>${day(p.date)}</td><td>${esc(p.client)}</td><td>Online</td><td>${esc(ACC[p.transfer.to]?.short || "?")}</td><td>${p.transfer.onList ? "Yes" : `<span class="warn-text">No</span>`}</td><td class="num">${aud(p.amount, 2)}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No transfers waiting.</td></tr>`}
+    </tbody></table></div>
+  </div>
+  <div class="section-gap"></div>
+  <div class="card" id="r-mismatch">
+    <h2>Slack and Stripe mismatches <span class="count">${n.noStripe.length + n.noSlack.length}</span></h2>
+    <p class="hint">New-sale posts in Slack and first payments in Stripe from the last 60 days that don't match by client, date and amount.</p>
+    <div class="table-wrap"><table data-title="Slack and Stripe mismatches"><thead><tr><th>Date</th><th>Client</th><th>Problem</th><th>Account</th><th class="num">Amount</th><th>Open</th></tr></thead><tbody>
+    ${[...n.noStripe.map(s => ({ d: s.date, c: s.client, why: "Slack post, no Stripe payment", a: s.account, amt: s.amount, url: slackUrl(s), where: "Slack post" })),
+       ...n.noSlack.map(p => ({ d: p.date, c: p.client, why: "Stripe payment, no Slack post", a: p.account, amt: p.amount, url: stripeUrl(p), where: "Stripe payment" }))]
+      .sort((x, y) => y.d.localeCompare(x.d))
+      .map(r => `<tr><td>${day(r.d)}</td><td>${esc(r.c)}</td><td>${r.why}</td><td>${esc(ACC[r.a]?.short || "–")}</td><td class="num">${aud(r.amt)}</td><td>${r.url ? `<a class="ig" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${r.where} ↗</a>` : `<span class="muted">No link yet</span>`}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">Slack and Stripe match.</td></tr>`}
+    </tbody></table></div>
+  </div>`;
+}
+
+/* Jump to a tab and highlight a card, or open Products with a filter ("tab:target") */
+function goTo(spec) {
+  const [tab, target] = spec.split(":");
+  if (tab === "products" && target) save({ offerFilter: target, offerQ: "" });
+  state.tab = tab; location.hash = tab; render();
+  const el = tab === "products" ? document.querySelector("#offerFilter")?.closest(".card") : document.getElementById(target);
+  if (el) { el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+}
+
+/* ---------- Monday meeting ---------- */
+function nextMeeting(now = Date.now()) {
+  const p = new Date(now + MEETING.offsetMin * 6e4);                       // Perth wall-clock in UTC fields
+  const todayStart = Date.UTC(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), MEETING.hour, MEETING.minute) - MEETING.offsetMin * 6e4;
+  let start = todayStart + ((MEETING.weekday - p.getUTCDay() + 7) % 7) * 864e5;
+  if (start + MEETING.durationMin * 6e4 <= now) start += 7 * 864e5;
+  const end = start + MEETING.durationMin * 6e4;
+  const sameDay = new Date(start + MEETING.offsetMin * 6e4).getUTCDate() === p.getUTCDate() && start - now < 864e5;
+  return { start, end, status: now >= start ? "live" : sameDay ? "today" : "later" };
+}
+function untilText(ms) {
+  const m = Math.max(1, Math.round(ms / 6e4));
+  if (m < 60) return `in ${m} min`;
+  const h = Math.floor(m / 60), r = m % 60;
+  if (h < 24) return `in ${h} h${r ? " " + r + " min" : ""}`;
+  const d = Math.round(h / 24); return `in ${d} ${d === 1 ? "day" : "days"}`;
+}
+function meetingHtml() {
+  const mt = nextMeeting(), now = Date.now();
+  const fmt = (opts, tz) => new Intl.DateTimeFormat("en-AU", { ...opts, timeZone: tz }).format(new Date(mt.start));
+  let when;
+  try {
+    when = fmt({ weekday: "long", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }, MEETING.tz) + " Perth time";
+    const mine = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (-new Date().getTimezoneOffset() !== MEETING.offsetMin) when += ` (${fmt({ hour: "numeric", minute: "2-digit", weekday: "short" }, mine)} your time)`;
+  } catch { when = "Mondays, 8:00 am Perth time"; }
+  const title = mt.status === "live" ? `<span class="live-dot" aria-hidden="true"></span> ${MEETING.title} is on now`
+    : mt.status === "today" ? `${MEETING.title} today <span class="m-tag">${untilText(mt.start - now)}</span>`
+    : `Next ${MEETING.title.toLowerCase()} <span class="m-tag">${untilText(mt.start - now)}</span>`;
+  const agenda = "Dashboard, sales, programs ending, revenue and sales activity.";
+  return `<div class="meeting ${mt.status}" role="region" aria-label="Monday team meeting">
+    <div class="m-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="1"/><path d="M15.5 10.5 21.5 7v10l-6-3.5"/></svg></div>
+    <div class="m-body"><div class="m-title">${title}</div><div class="m-when">${esc(when)} · ${agenda}</div></div>
+    <a class="btn primary" href="${esc(MEETING.url)}" target="_blank" rel="noopener noreferrer">Join Google Meet ↗</a>
+  </div>`;
+}
+/* Admins always see it on Overview; on Monday before and during the meeting it shows on every tab */
+function renderMeeting() {
+  const slot = $("#meetingSlot"); if (!slot) return;
+  const show = state.user && isAdmin() && (state.tab === "overview" || nextMeeting().status !== "later");
+  slot.innerHTML = show ? meetingHtml() : "";
+}
+setInterval(() => { if (state.user && DATA) renderMeeting(); }, 30000);
+
+/* ---------- render & events ---------- */
+function renderTabs() {
+  const tabs = isAdmin() ? TABS : TABS.filter(t => t.id === "sales");
+  if (!tabs.find(t => t.id === state.tab)) state.tab = tabs[0].id;
+  $("#tabs").innerHTML = tabs.map(t => `<button role="tab" type="button" data-tab="${t.id}" aria-selected="${t.id === state.tab}">${t.label}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { state.tab = b.dataset.tab; location.hash = state.tab; render(); });
+}
+function renderFilters() {
+  document.querySelectorAll("#periodType button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.periodType));
+  const keys = periodKeys(state.periodType);
+  if (!keys.includes(state.periodKey)) state.periodKey = keys[0];
+  $("#periodSel").innerHTML = keys.map(k => `<option value="${k}" ${k === state.periodKey ? "selected" : ""}>${esc(periodLabel(state.periodType, k))}</option>`).join("");
+  $("#compareLabel").textContent = "Compared with " + periodLabel(state.periodType, prevKey(state.periodType, state.periodKey)) + (isRunning() ? " to the same day" : "");
+}
+function render() {
+  if (!state.user || !DATA) return;
+  renderTabs(); renderFilters();
+  const v = { overview: viewOverview, sales: viewSales, clients: viewClients, products: viewProducts, reports: viewReports }[state.tab];
+  $("#view").innerHTML = v();
+  bindTips($("#view"));
+  bindView();
+  bindEntries();
+  renderMeeting();
+}
+function bindEntries() {
+  document.querySelectorAll("#view [data-go]").forEach(b => b.onclick = () => goTo(b.dataset.go));
+  document.querySelectorAll("#view [data-igsample]").forEach(b => b.onclick = () => openModal(`<h2 id="modalTitle">Instagram message</h2>
+    <p>With live data this opens the Instagram chat with <strong>${esc(b.dataset.client)}</strong> (@${esc(b.dataset.igsample)}) in a new tab.</p>
+    <p class="hint">This is sample data, so the handle isn't a real account and the link is turned off.</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn primary" type="button" data-close>OK</button></div>`));
+  document.querySelectorAll("[data-add]").forEach(b => b.onclick = () => openForm(b.dataset.add));
+  document.querySelectorAll("[data-callstatus]").forEach(sel => sel.onchange = () => {
+    const e = entries(); const id = sel.dataset.callstatus;
+    const local = e.calls.find(c => c.id === id);
+    if (local) local.status = sel.value; else e.callStatus[id] = sel.value;
+    saveEntries(e); render();
+  });
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    if (!isAdmin()) return;
+    const kind = b.dataset.del, id = b.dataset.id, e = entries();
+    e[kind] = e[kind].filter(x => x.id !== id); saveEntries(e); render();
+  });
+}
+function bindView() {
+  const on = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };
+  on("#memberQ", "input", e => { save({ memberQ: e.target.value }); rerenderKeepFocus("#memberQ"); });
+  on("#memberStatus", "change", e => { save({ memberStatus: e.target.value }); render(); });
+  on("#clientType", "change", e => { save({ clientType: e.target.value }); render(); });
+  document.querySelectorAll("#view tr.client-row").forEach(tr => tr.addEventListener("click", ev => { if (!ev.target.closest("a")) openClient(tr.dataset.client); }));
+  on("#offerQ", "input", e => { save({ offerQ: e.target.value }); rerenderKeepFocus("#offerQ"); });
+  on("#offerFilter", "change", e => { save({ offerFilter: e.target.value }); render(); });
+  document.querySelectorAll("[data-offer]").forEach(cb => cb.addEventListener("change", () => { const o = store().offerActive || {}; o[cb.dataset.offer] = cb.checked; save({ offerActive: o }); }));
+  // offer builder
+  const readB = () => ({ ...(store().builder || {}), name: $("#bName").value, total: $("#bTotal").value, deposit: $("#bDeposit").value, count: $("#bCount").value, start: $("#bStart").value });
+  ["#bName", "#bTotal", "#bDeposit", "#bCount", "#bStart"].forEach(id => on(id, "input", () => {
+    save({ builder: readB() });
+    if (id === "#bName") { const v = $("#bName").value; $("#bNameWarn").classList.toggle("hidden", !v || NAME_RE.test(v)); }
+  }));
+  on("#bMake", "click", () => {
+    const b = readB(); const total = Number(b.total) || 0, n = Math.max(1, Math.min(24, Number(b.count) || 1));
+    const dep = n === 1 ? total : Math.min(total, Number(b.deposit) || 0);
+    const each = n > 1 ? Math.round(((total - dep) / (n - 1)) * 100) / 100 : 0;
+    const start = b.start ? parse(b.start) : new Date();
+    b.rows = Array.from({ length: n }, (_, i) => ({ amount: i === 0 ? dep : (i === n - 1 ? Math.round((total - dep - each * (n - 2)) * 100) / 100 : each), date: i === 0 ? iso(start) : "", collected: false, notes: i === 0 ? "Deposit" : "" }));
+    save({ builder: b }); render(); $("#builder").scrollIntoView({ block: "nearest" });
+  });
+  on("#bClear", "click", () => { save({ builder: null }); render(); });
+  on("#bExport", "click", async () => { const b = store().builder; try { await navigator.clipboard.writeText(JSON.stringify(b, null, 2)); $("#bExport").textContent = "Copied"; } catch { $("#bExport").textContent = "Copy failed"; } });
+  document.querySelectorAll("#builder [data-row]").forEach(el => el.addEventListener("change", () => {
+    const b = store().builder; const r = b.rows[Number(el.dataset.row)]; const f = el.dataset.f;
+    r[f] = f === "collected" ? el.checked : f === "amount" ? Number(el.value) : el.value;
+    save({ builder: b }); if (f === "amount") render();
+  }));
+}
+function rerenderKeepFocus(sel) {
+  const el = $(sel); const pos = el.selectionStart; render(); const n = $(sel); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch {} }
+}
+document.querySelectorAll("#periodType button").forEach(b => b.onclick = () => { state.periodType = b.dataset.v; state.periodKey = null; save({ periodType: state.periodType }); render(); });
+$("#periodSel").onchange = e => { state.periodKey = e.target.value; render(); };
+$("#accountSel").onchange = e => { state.account = e.target.value; render(); };
+$("#themeBtn").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark"; document.documentElement.setAttribute("data-theme", next); save({ theme: next });
+};
+$("#dlTemplate").onclick = () => {
+  const out = { ...DATA, leads: allLeads(), calls: allCalls(), signups: allSignups(), changes: allChanges().map(({ m, ...c }) => c), notes: [...DATA.notes, ...entries().notes] };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "data.json"; a.click(); URL.revokeObjectURL(a.href);
+};
+
+const exportBtn = $("#exportBtn"), exportMenu = $("#exportMenu");
+function setMenu(open) { exportMenu.classList.toggle("hidden", !open); exportBtn.setAttribute("aria-expanded", open); if (open) exportMenu.querySelector("button").focus(); }
+exportBtn.onclick = e => { e.stopPropagation(); setMenu(exportMenu.classList.contains("hidden")); };
+exportMenu.querySelectorAll("[data-export]").forEach(b => b.onclick = () => { setMenu(false); b.dataset.export === "pdf" ? exportPDF() : exportCSV(); });
+document.addEventListener("click", e => { if (!exportMenu.contains(e.target)) setMenu(false); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (!exportMenu.classList.contains("hidden")) { setMenu(false); exportBtn.focus(); }
+  if (!$("#modal").classList.contains("hidden")) closeModal();
+});
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+
+function showLogin() {
+  state.user = null; $("#view").innerHTML = ""; $("#meetingSlot").innerHTML = ""; $("#login").classList.remove("hidden");
+  $("#loginErr").textContent = ""; $("#loginCode").value = "";
+  let saved = ""; try { saved = localStorage.getItem(NAME_KEY) || ""; } catch {}
+  $("#loginName").value = saved; (saved ? $("#loginCode") : $("#loginName")).focus();
+}
+function startSession(user) {
+  state.user = user;
+  $("#login").classList.add("hidden");
+  $("#userChip").textContent = `${user.name} · ${user.role === "admin" ? "Admin" : "Outreach"}`;
+  $("#accountSel").classList.toggle("hidden", !isAdmin());
+  $("#dlTemplate").classList.toggle("hidden", !isAdmin());
+  $("#footNote").textContent = isAdmin() ? "Admin view: all tabs." : "Outreach view: Sales tab only.";
+  if (!isAdmin()) { state.account = "all"; $("#accountSel").value = "all"; }
+  const h = location.hash.slice(1); state.tab = TABS.find(t => t.id === h) ? h : "overview";
+  if (user.role === "admin" && nextMeeting().status !== "later") state.tab = "overview";   // Monday morning: open on the meeting
+  render();
+}
+let failed = 0, lockUntil = 0;
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = m => { $("#loginErr").textContent = m; };
+  if (Date.now() < lockUntil) return err(`Too many tries. Wait ${Math.ceil((lockUntil - Date.now()) / 1000)} seconds.`);
+  const name = $("#loginName").value.trim().replace(/\s+/g, " ");
+  if (!name) return err("Enter your name.");
+  if (!$("#loginCode").value.trim()) return err("Enter your access code.");
+  const h = await hashCode($("#loginCode").value);
+  const match = ACCESS.find(a => a.hash === h);
+  if (!match) {
+    failed++; $("#loginCode").value = "";
+    if (failed >= 5) { lockUntil = Date.now() + 30000; failed = 0; return err("Too many tries. Wait 30 seconds."); }
+    return err("That access code isn't right.");
+  }
+  failed = 0;
+  const user = { name: name.slice(0, 60), role: match.role };
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); localStorage.setItem(NAME_KEY, user.name); } catch {}
+  startSession(user);
+});
+$("#logoutBtn").onclick = () => { try { localStorage.removeItem(SESSION_KEY); } catch {} showLogin(); };
+
+async function init() {
+  if (store().theme) document.documentElement.setAttribute("data-theme", store().theme);
+  try {
+    const r = await fetch("data.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("no data.json");
+    DATA = await r.json();
+  } catch { DATA = buildSample(); }
+  DATA.goals = DATA.goals || { monthlyRevenue: {} };
+  ["offers", "payments", "slackPosts", "members", "fees", "adSpend", "funnel", "leads", "calls", "signups", "changes", "notes"].forEach(k => DATA[k] = DATA[k] || []);
+  $("#sampleBadge").classList.toggle("hidden", !DATA.meta?.sample);
+  $("#asOf").textContent = "Data as of " + new Date(DATA.meta?.generatedAt || Date.now()).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  $("#accountSel").innerHTML += ACCOUNTS.map(a => `<option value="${a.id}">${a.name}</option>`).join("");
+  const user = currentUser();
+  if (user) startSession(user); else showLogin();
+}
+init();
+</script>
+</body>
+</html>

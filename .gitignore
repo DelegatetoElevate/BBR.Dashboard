@@ -1,0 +1,6 @@
+# Real data must never be committed: this repository is public.
+data.json
+*.csv
+.env*
+.DS_Store
+.vercel
