@@ -162,21 +162,26 @@ tbody tr:hover { background: var(--wash); }
 .n-item .go { margin-left: auto; color: var(--nc); flex: none; }
 .n-item:hover { color: var(--ink); } .n-item:hover .txt { text-decoration: underline; text-decoration-color: var(--nc); }
 .n-head:focus-visible, .n-item:focus-visible, .ig:focus-visible { outline: 2px solid var(--nc, var(--ink)); outline-offset: 2px; }
-.ig { color: var(--ink); text-decoration: underline; text-decoration-color: var(--n-slack); text-underline-offset: 3px; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.ig { color: var(--ink); text-decoration: underline; text-decoration-color: var(--axis); text-underline-offset: 3px; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .flash { animation: flash 1.8s ease-out; }
 /* v2: tab dot, sales, bookings, check-ins */
 :root { --n-risk: #e8590c; --orange: #f08c00; }
 .notif.n-risk { --nc: var(--n-risk); }
 nav.tabs button { position: relative; }
-.tab-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); margin-left: 7px; vertical-align: 2px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 25%, transparent); }
+.tab-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--axis); margin-left: 7px; vertical-align: 2px; }
+.tab-dot.on { background: var(--orange); }
+.tab-dot.on::before, .tab-dot.on::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--orange); animation: dot-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.tab-dot.on::after { animation-delay: 0.9s; }
+@keyframes dot-ping { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(3.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tab-dot.on::before, .tab-dot.on::after { animation: none; opacity: 0; } }
 .tab-sub-h { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 4px 0 12px; }
 .fx-pill { font-size: 12px; padding: 4px 10px; white-space: nowrap; color: var(--good-text); border-color: color-mix(in srgb, var(--good) 45%, transparent); background: color-mix(in srgb, var(--good) 8%, transparent); }
 .mini-btn { font: inherit; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border: 1px solid var(--border); background: transparent; color: var(--ink-2); cursor: pointer; }
 .mini-btn:hover { border-color: var(--ink); color: var(--ink); }
 .mini-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .est { font-size: 11px; color: var(--muted); font-style: italic; }
-.warn-amber { color: var(--n-offer); }
-.this-month { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--n-slack); margin-left: 6px; }
+.warn-amber { color: var(--ink-2); }
+.this-month { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--page); background: var(--ink); padding: 1px 6px; margin-left: 6px; }
 .pc-toggle { font: inherit; font-weight: 600; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .pc-toggle::before { content: "▸"; font-size: 11px; transition: transform .15s; }
 .pc-toggle[aria-expanded="true"]::before { transform: rotate(90deg); }
@@ -184,6 +189,11 @@ nav.tabs button { position: relative; }
 .pc-row td { background: var(--wash); }
 .pc-name { font-weight: 500; } .pc-sub { font-size: 12px; color: var(--muted); }
 .day-group { margin-top: 10px; } .day-head { font-size: 12px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 0; border-bottom: 1px solid var(--grid); }
+table.up-calls { table-layout: fixed; }
+table.up-calls td, table.up-calls th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.up-calls tr.day-row th { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); padding-top: 18px; background: none; border-bottom: 1px solid var(--axis); }
+table.up-calls tbody:first-of-type tr.day-row th { padding-top: 8px; }
+@media (max-width: 700px) { table.up-calls { table-layout: auto; } }
 .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
 .week-day { border: 1px solid var(--grid); padding: 8px 10px; } .week-day.today { border-color: var(--ink); }
 .ck-chip { display: flex; align-items: center; gap: 6px; width: 100%; font: inherit; font-size: 12.5px; text-align: left; background: none; border: 0; padding: 4px 0; color: var(--ink); cursor: pointer; }
@@ -288,6 +298,9 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--m
 .logo { width: 42px; height: 42px; flex: none; display: inline-block; background: url("data:image/png;base64,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") center / contain no-repeat; }
 .logo.lg { width: 72px; height: 72px; margin-bottom: 10px; }
 :root[data-theme="dark"] .logo { filter: invert(1); }
+.logo.globe { animation: globe-spin 8s linear infinite; }
+@keyframes globe-spin { from { transform: perspective(400px) rotateY(0deg); } to { transform: perspective(400px) rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) { .logo.globe { animation: none; } }
 @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .logo { filter: invert(1); } }
 .menu-wrap { position: relative; }
 .menu {
@@ -298,7 +311,13 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--m
 .menu button:hover, .menu button:focus-visible { background: var(--wash); }
 .menu .mhint { font-size: 11.5px; color: var(--muted); padding: 4px 10px 6px; }
 .user-chip { font-size: 12.5px; color: var(--ink-2); }
-.user-pill { font-size: 12.5px; padding: 4px 12px; white-space: nowrap; }
+.user-pill { font-size: 12.5px; padding: 4px 0; white-space: nowrap; width: 170px; overflow: hidden; display: inline-block; position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.user-pill .marquee { display: inline-flex; width: max-content; animation: ticker-right var(--dur, 9s) linear infinite; }
+.user-pill .marquee span { padding: 0 18px; }
+.user-pill:hover .marquee { animation-play-state: paused; }
+@keyframes ticker-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { .user-pill { width: auto; padding: 4px 12px; -webkit-mask-image: none; mask-image: none; } .user-pill .marquee { animation: none; } .user-pill .marquee span + span { display: none; } }
 .user-pill:empty { display: none; }
 .code-wrap { position: relative; display: block; }
 .code-wrap input { width: 100%; padding-right: 46px; letter-spacing: 0.04em; }
@@ -337,7 +356,7 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
 <header class="top">
   <div class="top-inner">
     <div class="title-row">
-      <span class="logo" role="img" aria-label="BBR"></span>
+      <span class="logo globe" role="img" aria-label="BBR"></span>
       <div class="titles"><h1>Bodies by Ryan · Dashboard</h1><div class="meta">
       <span class="sub" id="asOf"></span>
       </div></div>
@@ -1200,14 +1219,14 @@ function paymentCollectedCard() {
     <h2>Payment collected (new clients)</h2>
     <p class="hint">First payments from new sign-ups, by start date. Separate from recurring revenue. Instalments after the first are matched from Stripe once it's connected.</p>
     <div class="grid g-tiles" style="margin-bottom:14px">
-      ${tile("Collected this month", `<span class="up">${aud(cur.total)}</span>`, `<span class="muted">${cur.list.length} new clients</span>`)}
+      ${tile("Collected this month", aud(cur.total), `<span class="muted">${cur.list.length} new clients</span>`)}
       ${tile("Last month", aud(last.total), `<span class="muted">${last.list.length} new clients</span>`)}
       ${tile("Average per new client", cur.list.length ? aud(cur.total / cur.list.length) : "–", `<span class="muted">this month</span>`)}
     </div>
     <div class="table-wrap"><table data-title="Payment collected (new clients)"><thead><tr><th>Month</th><th class="num">New clients</th><th class="num">Collected (AUD)</th><th>Amounts</th></tr></thead>
     ${months.map((m, i) => `<tbody class="pc-month" data-open="${i === 0}">
       <tr class="pc-head"><td><button type="button" class="pc-toggle" aria-expanded="${i === 0}">${esc(m.label)}${i === 0 ? ` <span class="this-month">This month</span>` : ""}</button></td>
-      <td class="num">${m.list.length}</td><td class="num"><strong class="up">${aud(m.total)}</strong></td>
+      <td class="num">${m.list.length}</td><td class="num"><strong>${aud(m.total)}</strong></td>
       <td>${!m.list.length ? `<span class="muted">–</span>` : m.confirmed === m.list.length ? "all confirmed" : `<span class="warn-amber">${m.confirmed} of ${m.list.length} confirmed</span>`}</td></tr>
       ${m.list.map(row).join("")}</tbody>`).join("")}
     </table></div>
@@ -1217,30 +1236,29 @@ function paymentCollectedCard() {
 function viewSales() {
   const T = salesTotals();
   const fun = [
-    { label: "Total leads", value: T.leads, color: "var(--accent)" },
-    { label: "Call booked", value: T.booked, color: "var(--warning)", note: fmtPct(pct(T.booked, T.leads)) + " of prev" },
-    { label: "Showed up", value: T.showed, color: "var(--serious)", note: fmtPct(pct(T.showed, T.booked)) + " of prev" },
-    { label: "Signed up", value: T.converted, color: "var(--good)", note: fmtPct(pct(T.converted, T.showed)) + " of prev" }
+    { label: "Total leads", value: T.leads, color: "var(--ink)" },
+    { label: "Call booked", value: T.booked, color: "color-mix(in srgb, var(--ink) 75%, transparent)", note: fmtPct(pct(T.booked, T.leads)) + " of prev" },
+    { label: "Showed up", value: T.showed, color: "color-mix(in srgb, var(--ink) 55%, transparent)", note: fmtPct(pct(T.showed, T.booked)) + " of prev" },
+    { label: "Signed up", value: T.converted, color: "color-mix(in srgb, var(--ink) 35%, transparent)", note: fmtPct(pct(T.converted, T.showed)) + " of prev" }
   ];
   const src = bySource();
   const maxLeads = Math.max(1, ...src.map(r => r.leads));
   const nMonths = Number(store().salesMonths || 6);
   const months = callsByMonth(nMonths);
   return `
-  <div class="actions"><button class="pill primary" type="button" data-add="signup">+ Sign-up</button>
-    <span class="muted" style="font-size:12px">Ryan and Amy enter new sales here. Leads and calls come from Bookings.</span></div>
+  <div class="actions"><button class="pill primary" type="button" data-add="signup">+ Sign-up</button></div>
   <div class="grid g-tiles">
-    ${tile("Total leads", `<span style="color:var(--accent)">${T.leads.toLocaleString("en-AU")}</span>`, `<span class="muted">all time</span>`)}
-    ${tile("Calls booked", `<span style="color:var(--warning)">${T.booked.toLocaleString("en-AU")}</span>`, `<span class="muted">${fmtPct(pct(T.booked, T.leads))} of leads booked</span>`)}
-    ${tile("Showed up", `<span style="color:var(--serious)">${T.showed.toLocaleString("en-AU")}</span>`, `<span class="muted">${fmtPct(pct(T.showed, T.booked))} show rate</span>`)}
-    ${tile("Converted", `<span class="up">${T.converted.toLocaleString("en-AU")}</span>`, `<span class="muted">${fmtPct(pct(T.converted, T.showed))} close rate</span>`)}
-    ${tile("Revenue from calls", `<span style="color:var(--n-slack)">${aud(T.revenue)}</span>`, `<span class="muted">AUD · first payments from sign-ups</span>`)}
+    ${tile("Total leads", T.leads.toLocaleString("en-AU"), `<span class="muted">all time</span>`)}
+    ${tile("Calls booked", T.booked.toLocaleString("en-AU"), `<span class="muted">${fmtPct(pct(T.booked, T.leads))} of leads booked</span>`)}
+    ${tile("Showed up", T.showed.toLocaleString("en-AU"), `<span class="muted">${fmtPct(pct(T.showed, T.booked))} show rate</span>`)}
+    ${tile("Converted", T.converted.toLocaleString("en-AU"), `<span class="muted">${fmtPct(pct(T.converted, T.showed))} close rate</span>`)}
+    ${tile("Revenue from calls", aud(T.revenue), `<span class="muted">AUD · first payments from sign-ups</span>`)}
   </div>
   <div class="section-gap"></div>
   <div class="grid g-2e">
     <div class="card"><h2>Sales funnel</h2><p class="hint">Lead → Call → Show → Sign-up, all time.</p>${hbars(fun, { max: Math.max(1, T.leads) })}</div>
     <div class="card"><h2>Leads by source</h2><p class="hint">All time.</p>
-      ${src.length ? hbars(src.map((r, i) => ({ label: r.s, value: r.leads, color: SOURCE_COLORS[i % SOURCE_COLORS.length], note: "leads" })), { max: maxLeads }) : `<div class="empty">No leads yet.</div>`}</div>
+      ${src.length ? hbars(src.map((r, i) => ({ label: r.s, value: r.leads, color: "var(--ink)", note: "leads" })), { max: maxLeads }) : `<div class="empty">No leads yet.</div>`}</div>
   </div>
   <div class="section-gap"></div>
   <div class="grid g-2e">
@@ -1248,11 +1266,11 @@ function viewSales() {
       <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2>Calls booked by month</h2><p class="hint">Rescheduled = calls moved at least once.</p></div>
       <select id="salesMonths" aria-label="Months shown">${[3, 6, 12].map(v => `<option value="${v}" ${v === nMonths ? "selected" : ""}>Last ${v} months</option>`).join("")}</select></div>
       <div class="table-wrap"><table data-title="Calls booked by month"><thead><tr><th>Month</th><th class="num">Booked</th><th class="num">Showed</th><th class="num">No-show</th><th class="num">Rescheduled</th><th class="num">Sign-ups</th></tr></thead><tbody>
-      ${months.map(m => `<tr><td>${esc(m.label)}</td><td class="num" style="color:var(--warning)">${m.booked}</td><td class="num up">${m.showed}</td><td class="num down">${m.noShow}</td><td class="num">${m.resched || "–"}</td><td class="num" style="color:var(--n-slack)">${m.signed}</td></tr>`).join("")}
+      ${months.map(m => `<tr><td>${esc(m.label)}</td><td class="num">${m.booked}</td><td class="num">${m.showed}</td><td class="num">${m.noShow}</td><td class="num">${m.resched || "–"}</td><td class="num"><strong>${m.signed}</strong></td></tr>`).join("")}
       </tbody></table></div>
     </div>
     <div class="card"><h2>Conversion rate by source</h2><p class="hint">% of calls that became clients.</p>
-      ${src.filter(r => r.calls).length ? hbars(src.filter(r => r.calls).map(r => ({ label: r.s, value: Math.round((r.signed / r.calls) * 100), display: Math.round((r.signed / r.calls) * 100) + "%", color: "var(--good)", note: `(${r.signed}/${r.calls})` })), { max: 100 }) : `<div class="empty">No calls yet.</div>`}</div>
+      ${src.filter(r => r.calls).length ? hbars(src.filter(r => r.calls).map(r => ({ label: r.s, value: Math.round((r.signed / r.calls) * 100), display: Math.round((r.signed / r.calls) * 100) + "%", color: "var(--ink)", note: `(${r.signed}/${r.calls})` })), { max: 100 }) : `<div class="empty">No calls yet.</div>`}</div>
   </div>
   <div class="section-gap"></div>
   ${paymentCollectedCard()}
@@ -1287,8 +1305,8 @@ function viewBookings() {
   <div class="grid g-tiles">
     ${tile("Calls today", todayCount)}
     ${tile("Upcoming, next 14 days", upcoming.length)}
-    ${tile("To remind", `<span style="color:var(--serious)">${remind.length}</span>`, `<span class="muted">calls in the next 48 hours · ${reminded} reminded</span>`)}
-    ${tile("Need an outcome", `<span class="down">${outcome.length}</span>`, `<span class="muted">past calls still marked Booked</span>`)}
+    ${tile("To remind", remind.length, `<span class="muted">calls in the next 48 hours · ${reminded} reminded</span>`)}
+    ${tile("Need an outcome", outcome.length, `<span class="muted">past calls still marked Booked</span>`)}
   </div>
   <div class="section-gap"></div>
   <div class="grid g-2e">
@@ -1317,11 +1335,15 @@ function viewBookings() {
   <div class="card" id="b-upcoming">
     <h2>Upcoming calls <span class="count">${upcoming.length}</span></h2>
     <p class="hint">Next 14 days, by day.</p>
-    ${Object.keys(byDay).map(d => `<div class="day-group"><div class="day-head">${d === tIso ? "Today · " : ""}${parse(d).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}</div>
-      <div class="table-wrap"><table data-title="Calls ${esc(d)}"><tbody>${byDay[d].map(c => `<tr><td style="width:90px">${esc(c.callTime || "–")}</td><td>${esc(c.leadName)}</td><td>${contact(c)}</td><td>${esc(sourceOf(c))}</td>
-        <td>${c.reminded ? `<span class="up">Reminded</span>` : `<span class="muted">Not reminded</span>`}${c.rescheduled ? ` · <span class="muted">rescheduled ${c.rescheduled}×</span>` : ""}</td>
-        <td class="no-print" style="text-align:right"><button type="button" class="mini-btn" data-resched="${esc(c.id)}">Reschedule</button></td></tr>`).join("")}</tbody></table></div></div>`).join("")
-      || `<div class="empty">No calls booked in the next 14 days. Use "+ Book a call".</div>`}
+    ${upcoming.length ? `<div class="table-wrap"><table class="up-calls" data-title="Upcoming calls">
+      <colgroup><col style="width:9%"><col style="width:20%"><col style="width:22%"><col style="width:19%"><col style="width:18%"><col style="width:12%"></colgroup>
+      <thead><tr><th>Time</th><th>Lead</th><th>Contact</th><th>Source</th><th>Reminder</th><th class="no-print"></th></tr></thead>
+      ${Object.keys(byDay).map(d => `<tbody><tr class="day-row"><th colspan="6" scope="colgroup">${d === tIso ? "Today · " : ""}${parse(d).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}</th></tr>
+        ${byDay[d].map(c => `<tr><td>${esc(c.callTime || "–")}</td><td>${esc(c.leadName)}</td><td>${contact(c)}</td><td>${esc(sourceOf(c))}</td>
+        <td>${c.reminded ? "✓ Reminded" : `<span class="muted">Not reminded</span>`}${c.rescheduled ? ` <span class="muted">· moved ${c.rescheduled}×</span>` : ""}</td>
+        <td class="no-print" style="text-align:right"><button type="button" class="mini-btn" data-resched="${esc(c.id)}">Reschedule</button></td></tr>`).join("")}</tbody>`).join("")}
+    </table></div>` : ""}
+    ${upcoming.length ? "" : `<div class="empty">No calls booked in the next 14 days. Use "+ Book a call".</div>`}
   </div>
   <div class="section-gap"></div>
   <div class="card">
@@ -2162,7 +2184,7 @@ function renderTabs() {
   const tabs = allow ? TABS.filter(t => allow.includes(t.id)) : TABS;
   if (!tabs.find(t => t.id === state.tab)) state.tab = tabs[0].id;
   const dot = isAdmin() && needsAttention();
-  $("#tabs").innerHTML = tabs.map(t => `<button role="tab" type="button" data-tab="${t.id}" aria-selected="${t.id === state.tab}">${t.label}${t.id === "notifications" && dot ? `<span class="tab-dot" role="img" aria-label="needs attention"></span>` : ""}</button>`).join("");
+  $("#tabs").innerHTML = tabs.map(t => `<button role="tab" type="button" data-tab="${t.id}" aria-selected="${t.id === state.tab}">${t.label}${t.id === "notifications" && isAdmin() ? `<span class="tab-dot ${dot ? "on" : ""}" role="img" aria-label="${dot ? "Needs attention" : "Nothing to check"}"></span>` : ""}</button>`).join("");
   $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { state.tab = b.dataset.tab; location.hash = state.tab; render(); });
 }
 function renderFilters() {
@@ -2282,6 +2304,7 @@ document.addEventListener("keydown", e => {
 $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
 
 function showLogin() {
+  $("#userChip").innerHTML = "";
   state.user = null; $("#view").innerHTML = ""; $("#meetingSlot").innerHTML = ""; $("#login").classList.remove("hidden");
   $("#loginErr").textContent = ""; $("#loginCode").value = ""; $("#loginCode").type = "password";
   $("#toggleCode").innerHTML = EYE; $("#toggleCode").setAttribute("aria-label", "Show access code"); $("#toggleCode").setAttribute("aria-pressed", "false");
@@ -2291,7 +2314,9 @@ function showLogin() {
 function startSession(user) {
   state.user = user;
   $("#login").classList.add("hidden");
-  $("#userChip").textContent = `${user.name} · ${ROLE_LABEL[user.role] || user.role}`;
+  const who = `${user.name} · ${ROLE_LABEL[user.role] || user.role}`;
+  $("#userChip").setAttribute("aria-label", "Signed in as " + who);
+  $("#userChip").innerHTML = `<span class="marquee" style="--dur:${Math.max(7, who.length * 0.45)}s" aria-hidden="true">${[0, 1, 2, 3].map(() => `<span>${esc(who)}</span>`).join("")}</span>`;
   $("#accountSel").classList.toggle("hidden", !isAdmin());
   document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin()));
   if (!isAdmin()) { state.account = "all"; $("#accountSel").value = "all"; }
