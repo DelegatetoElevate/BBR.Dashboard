@@ -298,9 +298,13 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
       <div class="menu-wrap">
         <button class="pill" id="exportBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export ▾</button>
         <div class="menu hidden" id="exportMenu" role="menu">
-          <div class="mhint">Exports the current tab with the filters applied</div>
+          <div class="mhint">This tab, with the filters applied</div>
           <button type="button" role="menuitem" data-export="pdf">PDF <span class="muted">· opens print, choose "Save as PDF"</span></button>
           <button type="button" role="menuitem" data-export="csv">CSV <span class="muted">· for Excel or Google Sheets</span></button>
+          <div class="admin-only" style="border-top:1px solid var(--grid);margin:6px 0 0;padding-top:4px">
+            <div class="mhint">All dashboard data</div>
+            <button type="button" role="menuitem" data-export="json">Data file (JSON) <span class="muted">· backup, or set-up for live data</span></button>
+          </div>
         </div>
       </div>
       <button class="btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">Theme</button>
@@ -331,7 +335,6 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
   <div class="row">
     <span id="footNote"></span>
     <span class="spacer"></span>
-    <button class="btn" type="button" id="dlTemplate">Download data.json template</button>
   </div>
 </footer>
 <div class="tip" id="tip" role="tooltip"></div>
@@ -1792,16 +1795,21 @@ $("#themeBtn").onclick = () => {
   const cur = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   const next = cur === "dark" ? "light" : "dark"; document.documentElement.setAttribute("data-theme", next); save({ theme: next });
 };
-$("#dlTemplate").onclick = () => {
-  const out = { ...DATA, leads: allLeads(), calls: allCalls(), signups: allSignups(), changes: allChanges().map(({ m, ...c }) => c), notes: [...DATA.notes, ...entries().notes] };
-  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "data.json"; a.click(); URL.revokeObjectURL(a.href);
-};
+/* Full data file: everything the dashboard holds, in the data.json format (admins only) */
+function exportJSON() {
+  if (!isAdmin()) return;
+  const out = { ...DATA, meta: { ...DATA.meta, exportedAt: new Date().toISOString(), exportedBy: state.user.name },
+    leads: allLeads(), calls: allCalls(), signups: allSignups(), changes: allChanges().map(({ m, ...c }) => c), notes: [...DATA.notes, ...entries().notes] };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }));
+  a.download = `bbr-data-${todayIso()}.json`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
 
 const exportBtn = $("#exportBtn"), exportMenu = $("#exportMenu");
 function setMenu(open) { exportMenu.classList.toggle("hidden", !open); exportBtn.setAttribute("aria-expanded", open); if (open) exportMenu.querySelector("button").focus(); }
 exportBtn.onclick = e => { e.stopPropagation(); setMenu(exportMenu.classList.contains("hidden")); };
-exportMenu.querySelectorAll("[data-export]").forEach(b => b.onclick = () => { setMenu(false); b.dataset.export === "pdf" ? exportPDF() : exportCSV(); });
+exportMenu.querySelectorAll("[data-export]").forEach(b => b.onclick = () => { setMenu(false); const k = b.dataset.export; k === "pdf" ? exportPDF() : k === "json" ? exportJSON() : exportCSV(); });
 document.addEventListener("click", e => { if (!exportMenu.contains(e.target)) setMenu(false); });
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
@@ -1821,7 +1829,7 @@ function startSession(user) {
   $("#login").classList.add("hidden");
   $("#userChip").textContent = `${user.name} · ${user.role === "admin" ? "Admin" : "Outreach"}`;
   $("#accountSel").classList.toggle("hidden", !isAdmin());
-  $("#dlTemplate").classList.toggle("hidden", !isAdmin());
+  document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin()));
   $("#footNote").textContent = isAdmin() ? "Admin view: all tabs." : "Outreach view: Sales tab only.";
   if (!isAdmin()) { state.account = "all"; $("#accountSel").value = "all"; }
   const h = location.hash.slice(1); state.tab = TABS.find(t => t.id === h) ? h : "overview";

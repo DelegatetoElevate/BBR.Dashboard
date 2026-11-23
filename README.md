@@ -21,6 +21,7 @@ Filters: week, month or year, plus the account (BBR New Sales, BBR Claremont, BB
 **Export** (pill at the top right): exports the current tab with the filters applied.
 - **PDF** opens the print window; choose "Save as PDF". Buttons, filters and the "Show as table" sections are left out.
 - **CSV** downloads the tab's summary tiles and every table on it, ready for Excel or Google Sheets.
+- **Data file (JSON)** (admins only) downloads everything the dashboard holds, including entries made in this browser, in the `data.json` format. Use it as a backup, to move entries, or as the blueprint for connecting live data.
 
 ## Manual entries
 
@@ -71,7 +72,7 @@ Each group has its own colour, and every heading and line can be clicked:
 
 The client's Instagram handle is looked up by name from `payments[].instagram`, `members[].instagram`, sign-ups (the form has an Instagram field) or a lead whose contact starts with `@`. With sample data the Instagram links are turned off and show where they would go.
 
-**Demo limitation:** entries are saved in the browser where they were typed (localStorage). Other people and other devices won't see them. "Download data.json template" includes them, so they can be copied into `data.json`.
+**Demo limitation:** entries are saved in the browser where they were typed (localStorage). Other people and other devices won't see them. **Export → Data file (JSON)** includes them, so they can be backed up, moved to another computer or copied into `data.json`.
 
 ## Deploy on GitHub and Vercel
 
@@ -109,7 +110,7 @@ The codes are shared with the team directly. **Never write them in this reposito
 
 The page loads `data.json` from the same folder on every visit. Generate that file from the sources below. A Zapier or Make flow, or a small scheduled script (e.g. a GitHub Action that runs every morning and commits `data.json`), can produce it.
 
-Click **Download data.json template** in the page footer to get a complete example in the exact format.
+Admins can choose **Export → Data file (JSON)** to download a complete example in the exact format (`bbr-data-YYYY-MM-DD.json`).
 
 | Source | Feeds | Refresh |
 | --- | --- | --- |
