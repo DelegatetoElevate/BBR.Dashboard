@@ -257,6 +257,11 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--m
 .user-chip { font-size: 12.5px; color: var(--ink-2); }
 .user-pill { font-size: 12.5px; padding: 4px 12px; white-space: nowrap; }
 .user-pill:empty { display: none; }
+.code-wrap { position: relative; display: block; }
+.code-wrap input { width: 100%; padding-right: 46px; letter-spacing: 0.04em; }
+.eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 30px; display: grid; place-items: center; background: none; border: 0; color: var(--ink-2); cursor: pointer; }
+.eye:hover { color: var(--ink); }
+.eye:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60; display: grid; place-items: center; padding: 16px; }
 .login-screen { position: fixed; inset: 0; background: var(--page); z-index: 70; display: grid; place-items: center; padding: 16px; }
 .dialog { background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 20px 22px; width: min(560px, 100%); max-height: 90vh; overflow: auto; }
@@ -340,7 +345,7 @@ textarea { background: var(--card); border: 1px solid var(--border); border-radi
     <p class="hint" style="margin:0">Sign in to continue.</p>
     <div class="form-grid" style="grid-template-columns:1fr">
       <label>Your name<input type="text" id="loginName" required maxlength="60" autocomplete="name" placeholder="e.g. Sheila"></label>
-      <label>Access code<input type="password" id="loginCode" required maxlength="60" autocomplete="off" spellcheck="false"></label>
+      <label for="loginCode">Access code<span class="code-wrap"><input type="password" id="loginCode" required maxlength="60" autocomplete="off" autocapitalize="characters" spellcheck="false" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"><button type="button" class="eye" id="toggleCode" aria-label="Show access code" aria-pressed="false" aria-controls="loginCode"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
     </div>
     <div class="err" id="loginErr" role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%;padding:12px">Sign in</button>
@@ -379,7 +384,7 @@ const SESSION_KEY = "bbr-session-v1";
    run  await hashCode("NEW-CODE")  in the browser console and paste the result below.
    Codes ignore spaces, dashes and upper/lower case. */
 const ACCESS = [
-  { role: "admin",    label: "Admin",    hash: "86e207580f394798b599170686f4e73d8942334c77f95e6302aadcbbf800ffb9" },
+  { role: "admin",    label: "Admin",    hash: "18e0622d5160acf561d00bbf73c595a172c0d3fdfe11e82f60c0d9a6d78e596c" },
   { role: "outreach", label: "Outreach", hash: "2d70636438375c0549753a76bfae6e6f64d75cb0e27673c1e79cd69817163261" }
 ];
 const NAME_KEY = "bbr-name-v1";
@@ -1814,7 +1819,8 @@ $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeM
 
 function showLogin() {
   state.user = null; $("#view").innerHTML = ""; $("#meetingSlot").innerHTML = ""; $("#login").classList.remove("hidden");
-  $("#loginErr").textContent = ""; $("#loginCode").value = "";
+  $("#loginErr").textContent = ""; $("#loginCode").value = ""; $("#loginCode").type = "password";
+  $("#toggleCode").innerHTML = EYE; $("#toggleCode").setAttribute("aria-label", "Show access code"); $("#toggleCode").setAttribute("aria-pressed", "false");
   let saved = ""; try { saved = localStorage.getItem(NAME_KEY) || ""; } catch {}
   $("#loginName").value = saved; (saved ? $("#loginCode") : $("#loginName")).focus();
 }
@@ -1830,6 +1836,15 @@ function startSession(user) {
   render();
 }
 let failed = 0, lockUntil = 0;
+const EYE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>', EYE_OFF = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+$("#toggleCode").onclick = () => {
+  const inp = $("#loginCode"), show = inp.type === "password";
+  inp.type = show ? "text" : "password";
+  $("#toggleCode").innerHTML = show ? EYE_OFF : EYE;
+  $("#toggleCode").setAttribute("aria-label", show ? "Hide access code" : "Show access code");
+  $("#toggleCode").setAttribute("aria-pressed", String(show));
+  inp.focus();
+};
 $("#loginForm").addEventListener("submit", async e => {
   e.preventDefault();
   const err = m => { $("#loginErr").textContent = m; };
@@ -1840,7 +1855,7 @@ $("#loginForm").addEventListener("submit", async e => {
   const h = await hashCode($("#loginCode").value);
   const match = ACCESS.find(a => a.hash === h);
   if (!match) {
-    failed++; $("#loginCode").value = "";
+    failed++; $("#loginCode").select();
     if (failed >= 5) { lockUntil = Date.now() + 30000; failed = 0; return err("Too many tries. Wait 30 seconds."); }
     return err("That access code isn't right.");
   }
