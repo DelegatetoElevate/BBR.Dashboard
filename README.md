@@ -8,28 +8,28 @@ Until a `data.json` file is added, the page shows **sample data** (marked with a
 
 ## Tabs
 
-| Tab | What it shows |
-| --- | --- |
-| Overview and Notifications | Monday meeting banner, sales collected vs. the monthly goal, recurring revenue, churn (lost cash flow), collections due, money in vs. money out, sign-ups, weekly sales by account, week-on-week and month-on-month comparisons, notifications |
-| Sales | New leads, calls booked, show-up rate, sign-ups, closing rate, no-shows, cancellations, funnel, calls and leads lists, sign-ups list (admin), programs sold, ROAS (admin) |
-| Clients | Every client in one list (gym members, custom and online program clients, sign-ups), terminations, freezes and pauses starting soon. Click a client for their details and notes |
-| Offers | Every offer with an active/inactive toggle, naming and missing-detail checks, standard prices, offer builder for split payments |
-| Reports | Revenue by account (collected, outstanding, scheduled), Momence fee income net of waived fees, monthly sales, payments not yet collected, upcoming collections, transfers waiting, Slack and Stripe mismatches |
+| Tab | Who | What it shows |
+| --- | --- | --- |
+| Overview | Admin | Sales collected vs. the monthly goal, recurring revenue, churn, collections due, money in vs. out, sign-ups, weekly sales by account, week-on-week and month-on-month, ROAS, and the **Reports** (revenue by account, fee income, monthly sales, payments not collected, upcoming collections, transfers, Slack and Stripe mismatches). The Week / Month / Year and account filters apply here only |
+| Notifications | Admin | The Monday meeting banner with the Google Meet link, and every item that needs action. An **orange dot** on the tab means there is something to check, or the Monday meeting is today |
+| Sales | Admin | **+ Sign-up** for Ryan and Amy. Total leads, calls booked, showed up, converted, revenue from calls; sales funnel; leads by source; calls booked by month (booked, showed, no-show, rescheduled, sign-ups); conversion rate by source; payment collected from new clients by start month (with Edit to confirm the amount received); and the **Offers** list and split-payment builder |
+| Bookings | Outreach + admin | **+ New lead** and **+ Book a call**; who to remind (calls in the next 48 hours); calls that need an outcome (showed, no-show, reschedule, cancelled); upcoming calls by day; recent calls; new leads |
+| Memberships | Admin | Onboarding (signed up, not started), Offboarding (termination notice running), Suspended (active and upcoming freezes, pauses and suspensions), Terminated, plus everything coming up in the next 2 months. Sort by date added or start date |
+| Client Check-ins | Coaches + admin | Traffic-light health check: At risk / Watch / On track / Not set, updated by coaches; filters by coach, status and last update; check-ins due this week (weekly, on the weekday each client started) |
+| Clients | Admin | Every client in one list; click a client for details, payments and notes |
 
-Filters: week, month or year, plus the account (BBR New Sales, BBR Claremont, BBR Jolimont; admin only).
-
-**Export** (pill at the top right): exports the current tab with the filters applied.
-- **PDF** opens the print window; choose "Save as PDF". Buttons, filters and the "Show as table" sections are left out.
-- **CSV** downloads the tab's summary tiles and every table on it, ready for Excel or Google Sheets.
-- **Data file (JSON)** (admins only) downloads everything the dashboard holds, including entries made in this browser, in the `data.json` format. Use it as a backup, to move entries, or as the blueprint for connecting live data.
+The **USD rate** at the top (1 AUD = … USD) is the European Central Bank's daily reference rate, fetched from the free Frankfurter API (`api.frankfurter.dev`) and refreshed every 6 hours. All amounts in the dashboard are AUD.
 
 ## Manual entries
 
-- **+ New lead** (admin and outreach): date, name, contact, source, interest, notes.
-- **+ Call booked** (admin and outreach): lead name (a new name is also added as a lead), call date and time, contact, notes. Update the call's status (Booked, Showed, No-show, Cancelled, Closed) in the Calls table after the call.
-- **+ Sign-up** (admin only): every sign-up is entered by hand. Date, client, email (unique identifier), program, type, account, contract value, cash collected, payment type, closed by, lead source, notes.
+- **+ New lead** (Bookings): date, name, contact, source, interest, notes.
+- **+ Book a call** (Bookings): lead name (a new name is also added as a lead), call date and time, contact, source, notes. Afterwards: **Mark reminded**, record the outcome, or **Reschedule** (counts how many times a call moved).
+- **+ Sign-up** (Sales, Memberships): sign-up date, start date, client, email, Instagram, program, coach, type, account, contract value, first payment, payment type, number of instalments, closed by, lead source, notes. For instalments, Ryan or Amy enters the first payment; later payments will be matched from Stripe once it's connected.
+- **Edit** on a new client's payment (Sales): amount received, date received, confirmed.
+- **+ Termination / freeze / pause** (Memberships).
+- **Check-in update** (Client Check-ins): click a client's light, choose On track / Watch / At risk and add a note.
 
-Sign-ups drive the Sign-ups count, closing rate and Programs sold. Revenue still comes from Stripe.
+**Demo limitation:** entries are saved in the browser where they were typed (localStorage). Other people and other devices won't see them until the shared database is set up. **Export → Data file (JSON)** includes them.
 
 ## Clients
 
@@ -45,34 +45,25 @@ Clicking a client opens their details:
 
 ## Monday meeting banner
 
-Admins see a banner at the top of the dashboard for the weekly team meeting, **every Monday at 8:00 am Perth time** (Perth has no daylight saving, so it's always UTC+8). **Join Google Meet** opens the meeting link in a new tab.
-
-| When | What admins see |
-| --- | --- |
-| Monday, before 8:00 am | Black banner on every tab, "today · in 25 min". Signing in opens Overview so it's the first thing on screen |
-| Monday, 8:00–9:00 am | Black banner on every tab, "on now" |
-| Rest of the week | Outlined banner on Overview only, with the countdown to next Monday |
-
-Outreach accounts don't see it. To change the link, time or length, edit `MEETING` near the top of the script in `index.html`.
+The weekly team meeting is **every Monday at 8:00 am Perth time** (UTC+8, no daylight saving). The banner and its **Join Google Meet** button live at the top of the **Notifications** tab. On Monday before and during the meeting, the Notifications tab shows the orange dot; admins still land on Overview when they sign in. To change the link, time or length, edit `MEETING` in `index.html`.
 
 ## Notifications
 
-Each group has its own colour, and every heading and line can be clicked:
+The Notifications tab lists everything that needs action. Each group has its own colour, and every heading and line can be clicked:
 
 | Notification | Colour | Click goes to |
 | --- | --- | --- |
-| Payments not yet collected | Red | The client's Instagram chat (`ig.me/m/<handle>`, new tab). No handle: the "Payments not yet collected" table on Reports |
-| Slack and Stripe mismatches | Magenta | The Slack post (`slackPosts[].permalink`) or the Stripe payment. No link: the mismatches table on Reports |
-| Transfers between accounts | Green | The "Transfers waiting" table on Reports |
-| Upcoming collections | Blue | The "Upcoming collections" table on Reports |
-| Offers needing details | Amber | Offers, filtered to "Needs details" |
-| Terminations, freezes and pauses starting in the next 14 days | Purple | "Starting soon" list on Clients |
+| Payments not yet collected | Red | The client's Instagram chat (`ig.me/m/<handle>`, new tab). No handle: the "Payments not yet collected" table in Overview → Reports |
+| Clients at risk | Orange | Client Check-ins, At risk section |
+| Slack and Stripe mismatches | Magenta | The Slack post (`slackPosts[].permalink`) or the Stripe payment. No link: the mismatches table in Overview → Reports |
+| Transfers between accounts | Green | "Transfers waiting" in Overview → Reports |
+| Upcoming collections | Blue | "Upcoming collections" in Overview → Reports |
+| Terminations, freezes and pauses starting in the next 14 days | Purple | Memberships (Offboarding or Suspended) |
+| Offers needing details | Amber | Sales → Offers, filtered to "Needs details" |
 
-**Terminations, freezes and pauses.** The Clients tab lists everything starting in the next 2 months, grouped by month: start date, member, type, length (or "open" with no end date), home gym, how long they've been a member, estimated lost cash flow, reason and an Instagram link, so Ryan can contact long-term members before they leave. Admins log new ones with **+ Termination / freeze / pause** (member, email, type, start date, end date, reason, notes).
+Slack messages will appear here once Slack is connected.
 
 The client's Instagram handle is looked up by name from `payments[].instagram`, `members[].instagram`, sign-ups (the form has an Instagram field) or a lead whose contact starts with `@`. With sample data the Instagram links are turned off and show where they would go.
-
-**Demo limitation:** entries are saved in the browser where they were typed (localStorage). Other people and other devices won't see them. **Export → Data file (JSON)** includes them, so they can be backed up, moved to another computer or copied into `data.json`.
 
 ## Deploy on GitHub and Vercel
 
@@ -83,14 +74,15 @@ The client's Instagram handle is looked up by name from `payments[].instagram`, 
 
 To preview locally, run `python3 -m http.server` in the folder and open `http://localhost:8000`. Opening the file directly also works, but it can't load `data.json` that way.
 
-## Access: admin vs. outreach (access codes)
+## Access (access codes)
 
 Everyone signs in with **their name and an access code**. The code decides what they see:
 
 | Role | Sees | Can add |
 | --- | --- | --- |
-| Admin (Ryan, Amy, Sheila, D2E) | All tabs, all accounts, revenue | Leads, calls, sign-ups, terminations/freezes/pauses, client notes |
-| Outreach | Sales tab only, without revenue | Leads and calls |
+| Admin (Ryan, Amy, Sheila, D2E) | All tabs | Everything |
+| Outreach | Bookings only | Leads, booked calls, reminders, outcomes, reschedules |
+| Coach | Client Check-ins only | Check-in status updates and notes. A coach who signs in with their own name sees their clients first |
 
 The codes are shared with the team directly. **Never write them in this repository**: it is public.
 
@@ -173,6 +165,10 @@ Field notes:
 - `instagram`: the client's handle, with or without `@` (on payments, members or sign-ups). Used for the Instagram links on overdue payments.
 - `stripeUrl` (optional): link to the payment in Stripe. If missing, a `pi_`, `ch_` or `in_` id is turned into a Stripe dashboard link. `slackPosts[].permalink` links to the Slack post.
 - `changes[].type`: `termination`, `freeze` or `pause`. `end` is blank for terminations and for open freezes or pauses. Matched to `members[]` by `email`, then by name; add `email` to members for a reliable match.
+- `calls[]`: also `source`, `rescheduled` (times moved), `reminded` (true once the lead was reminded), `remindedBy`, `remindedAt`.
+- `signups[]`: also `start` (start date), `coach`, `instalments` (number), `confirmed` (first payment checked), `received` (date received).
+- `pulse[]`: check-in updates, `{ "clientKey", "client", "status": "on_track" | "watch" | "at_risk", "note", "at", "by" }`. The newest per client counts.
+- `members[]`: also `coach`, `suspendedFrom`, `suspendedUntil`, `endDate`. Client Check-ins includes clients who have a coach and an active membership, or a program that started in the last 6 months (until program end dates come from Coach Vault).
 - `notes[]`: client notes. `clientKey` is `e:` + the client's email (or `n:` + their name in lower case when there's no email); `kind` is `update`, `change`, `payment` or `other`.
 - `members[].status`: `active`, `suspended`, `terminated` or `free`. Lost cash flow = `suspensionWeeks` ÷ 2 × fortnightly `price`; upfront payers count as no loss.
 - `fees[].type`: `late_cancel` ($15, within 8 hours of class) or `no_show` ($30). Set `waived: true` for waived or refunded fees.
@@ -184,6 +180,11 @@ Field notes:
 Excluded by design: guest passes and season-pass vouchers (no revenue impact), and the retired Google sales sheet.
 
 ## Still to confirm before going live
+
+- Booking calendar to connect (GoHighLevel, Calendly or Google Calendar) for upcoming calls
+- Stripe access, then Zapier to fill the sales sheet; instalments after the first matched from Stripe
+- Coach Vault connection for check-in dates and program end dates
+- Coach names (coaches use the coach access code)
 
 - Student GFM price and family pricing
 - Online offer catalogue (Ryan and Gene)
