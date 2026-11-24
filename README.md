@@ -28,7 +28,7 @@ All amounts in the dashboard are AUD.
 - **+ Book a call** (Bookings): lead name (a new name is also added as a lead), call date and time, contact, source, notes. Afterwards: **Mark reminded**, record the outcome, or **Reschedule** (counts how many times a call moved).
 - **+ Sign-up** (Sales, Memberships): sign-up date, start date, client, email, Instagram, program, coach (Ryan, Eva or Sage; ticking **VIP** assigns Ryan), type (gym membership, online program, custom program or challenge), program length in weeks, account, contract value, first payment, payment type, number of instalments, closed by, lead source, special notes. For instalments, Ryan or Amy enters the first payment; later payments will be matched from Stripe once it's connected.
 - **Edit** on a new client's payment (Sales): amount received, date received, confirmed.
-- **+ Termination / freeze / pause** (Memberships).
+- **+ Termination / pause** (Memberships): termination, pause or program ending (the date the program ends, shown as "Program ending on [date]").
 - **Check-in update** (Client Check-ins): click a client's light, choose On track / Watch / At risk, add a note and a note for the coach meeting with Ryan.
 - **Mark received** (Client Check-ins): the date and time the check-in form came in (Perth time); the dashboard works out which Tuesday it counts for.
 - **Onboarding checklist** (Memberships): click each step to tick it; the name and time are recorded. Click a ticked step to untick it.
@@ -64,7 +64,7 @@ The Notifications tab lists everything that needs action. Each group has its own
 | Slack and Stripe mismatches | Magenta | The Slack post (`slackPosts[].permalink`) or the Stripe payment. No link: the mismatches table in Overview → Reports |
 | Transfers between accounts | Green | "Transfers waiting" in Overview → Reports |
 | Upcoming collections | Blue | "Upcoming collections" in Overview → Reports |
-| Terminations, freezes and pauses starting in the next 14 days | Purple | Memberships (Termination notice or Suspended) |
+| Terminations, pauses and program endings starting in the next 14 days | Purple | Memberships (Termination notice, Suspended or Program ending) |
 | Offers needing details | Amber | Sales → Offers, filtered to "Needs details" |
 
 Slack messages will appear here once Slack is connected.
@@ -170,7 +170,7 @@ Field notes:
 - `offers[].transfer`: for gym sales taken through the online account (e.g. Black Friday). Set `confirmed: true` after accounting confirms; `onList` means it is on Sheila's transfer list.
 - `instagram`: the client's handle, with or without `@` (on payments, members or sign-ups). Used for the Instagram links on overdue payments.
 - `stripeUrl` (optional): link to the payment in Stripe. If missing, a `pi_`, `ch_` or `in_` id is turned into a Stripe dashboard link. `slackPosts[].permalink` links to the Slack post.
-- `changes[].type`: `termination`, `freeze` or `pause`. `end` is blank for terminations and for open freezes or pauses. Matched to `members[]` by `email`, then by name; add `email` to members for a reliable match.
+- `changes[].type`: `termination`, `pause` or `program_end` (older `freeze` records still show). `end` is blank for terminations, program endings and open pauses. Matched to `members[]` by `email`, then by name; add `email` to members for a reliable match.
 - `calls[]`: also `source`, `rescheduled` (times moved), `reminded` (true once the lead was reminded), `remindedBy`, `remindedAt`.
 - `signups[]`: also `start` (start date), `coach`, `vip`, `weeks` (program length; otherwise read from a name like "12-Week …"), `instalments` (number), `confirmed` (first payment checked), `received` (date received).
 - `pulse[]`: check-in updates, `{ "clientKey", "client", "status": "on_track" | "watch" | "at_risk", "note", "meetingNote", "at", "by" }`. The newest per client counts.

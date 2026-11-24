@@ -179,7 +179,7 @@ tbody tr:hover { background: var(--wash); }
 #view td .mini-btn, .pc-ck .mini-btn { white-space: nowrap; }
 td.wrap-cell { white-space: normal; min-width: 160px; max-width: 280px; font-size: 12.5px; }
 .type-chip { display: inline-block; font-size: 11.5px; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
-.type-termination { color: var(--n-payment); } .type-open { color: var(--muted); } .type-freeze { color: var(--n-upcoming); } .type-pause { color: var(--n-change); }
+.type-termination { color: var(--n-payment); } .type-open { color: var(--muted); } .type-freeze { color: var(--n-upcoming); } .type-pause { color: var(--n-change); } .type-program_end { color: var(--ink-2); }
 .month-row td { background: var(--wash); font-weight: 600; font-size: 12px; color: var(--ink-2); }
 .notif .ico { background: var(--nc) !important; }
 .notif.n-offer .ico { color: #0b0b0b; }
@@ -495,7 +495,9 @@ const ONBOARD_STEPS = [
 ];
 /* Weekly team meeting: every Monday 8:00 am Perth time (AWST, UTC+8, no daylight saving) */
 const MEETING = { title: "Monday team meeting", url: "https://meet.google.com/weo-esoz-gxs?hs=224", weekday: 1, hour: 8, minute: 0, durationMin: 60, offsetMin: 480, tz: "Australia/Perth" };
-const CHANGE_TYPES = { termination: "Termination", freeze: "Freeze", pause: "Pause" };
+const CHANGE_TYPES = { termination: "Termination", pause: "Pause", program_end: "Program ending" };
+const NO_END = t => t === "termination" || t === "program_end";   // one date only
+const CHANGE_LABEL = { ...CHANGE_TYPES, freeze: "Freeze" };   // older records may still say freeze
 const CHANGE_WINDOW_DAYS = 14;   // notification window
 const LOOKAHEAD_DAYS = 61;       // Clients tab list: about 2 months
 
@@ -551,6 +553,7 @@ function tenure(since) {
 }
 function changeLength(c) {
   if (c.type === "termination") return "Ends membership";
+  if (c.type === "program_end") return `Program ending on ${dayFmt(c.start)}`;
   if (!c.end) return "Open, no end date";
   const w = Math.max(1, Math.round((parse(c.end) - parse(c.start)) / 864e5 / 7));
   return `${w} ${w === 1 ? "week" : "weeks"}, to ${dShort(parse(c.end))}`;
@@ -558,6 +561,7 @@ function changeLength(c) {
 function changeLost(c) {
   const m = c.m; if (!m || m.upfront || !m.price) return null;
   if (c.type === "termination") return { v: m.price * 26 / 12, per: "/ month" };
+  if (c.type === "program_end") return null;
   if (!c.end) return { v: m.price, per: "/ fortnight" };
   const w = (parse(c.end) - parse(c.start)) / 864e5 / 7; return { v: (w / 2) * m.price, per: "total" };
 }
@@ -683,9 +687,9 @@ function buildSample() {
   }
   // Scheduled terminations, freezes and pauses (sample)
   const changes = [];
-  const reasons = { termination: ["Moving interstate", "Cost", "Injury", "Training elsewhere"], freeze: ["Travel", "Work roster", "Holiday"], pause: ["Medical", "Surgery recovery", "Pregnancy"] };
+  const reasons = { termination: ["Moving interstate", "Cost", "Injury", "Training elsewhere"], pause: ["Travel", "Work roster", "Holiday", "Medical", "Surgery recovery"] };
   members.filter(m => m.status === "active").slice(0, 11).forEach((m, i) => {
-    const type = ["termination", "freeze", "pause", "freeze", "termination", "freeze", "pause", "freeze", "termination", "freeze", "freeze"][i];
+    const type = ["termination", "pause", "pause", "pause", "termination", "pause", "pause", "pause", "termination", "pause", "pause"][i];
     const start = addDays(today, [1, 3, 5, 6, 9, 12, 16, 22, 28, 35, 48][i]);
     const end = type === "termination" ? "" : i === 5 ? "" : iso(addDays(start, 7 * (2 + (i % 5))));
     m.instagram = m.name.toLowerCase().replace(/[^a-z]/g, "") + i + ".sample";
@@ -804,7 +808,7 @@ function buildSample() {
     if (rnd() < 0.12) return;
     const st = rnd() < 0.12 ? "at_risk" : rnd() < 0.2 ? "watch" : "on_track";
     pulse.push({ clientKey: m.key, client: m.name, status: st, note: pick(notesBy[st]), at: addDays(today, -Math.floor(rnd() * 30)).toISOString(), by: m.coach,
-      meetingNote: st !== "on_track" && rnd() < 0.6 ? pick(["Talk about adjusting macros", "Ask Ryan about a program change", "Discuss reducing sessions while travelling", "Check if a freeze would help"]) : "" });
+      meetingNote: st !== "on_track" && rnd() < 0.6 ? pick(["Talk about adjusting macros", "Ask Ryan about a program change", "Discuss reducing sessions while travelling", "Check if a pause would help"]) : "" });
   });
   return {
     meta: { business: "Bodies by Ryan", currency: "AUD", generatedAt: new Date().toISOString(), sample: true },
@@ -1194,8 +1198,8 @@ function notifGroups() {
   if (n.upcoming.length) group("n-upcoming", "↻", "Upcoming collections, next 14 days", n.upcoming.length, "overview:r-upcoming",
     [`<div class="n-item" style="cursor:default">${aud(dueSoon)} due</div>`, ...n.upcoming.slice(0, 3).map(p => go("overview:r-upcoming", `${esc(p.client)} ${aud(p.amount)} on ${dShort(parse(p.date))}`))]);
   const chg = upcomingChanges(CHANGE_WINDOW_DAYS);
-  if (chg.length) group("n-change", "‖", `Terminations, freezes and pauses starting, next ${CHANGE_WINDOW_DAYS} days`, chg.length, "memberships:m-upcoming",
-    chg.slice(0, 4).map(c => go(c.type === "termination" ? "memberships:m-termnotice" : "memberships:m-suspended", `${esc(c.member)} · <strong>${CHANGE_TYPES[c.type] || esc(c.type)}</strong> from ${dShort(parse(c.start))}${c.type !== "termination" ? ` · ${esc(changeLength(c))}` : ""}${c.m?.since ? ` · member ${tenure(c.m.since)}` : ""}`)),
+  if (chg.length) group("n-change", "‖", `Terminations, pauses and program endings, next ${CHANGE_WINDOW_DAYS} days`, chg.length, "memberships:m-upcoming",
+    chg.slice(0, 4).map(c => c.type === "program_end" ? go("memberships:m-ending", `${esc(c.member)} · <strong>Program ending on ${dShort(parse(c.start))}</strong>`) : go(c.type === "termination" ? "memberships:m-termnotice" : "memberships:m-suspended", `${esc(c.member)} · <strong>${CHANGE_LABEL[c.type] || esc(c.type)}</strong> from ${dShort(parse(c.start))}${c.type !== "termination" ? ` · ${esc(changeLength(c))}` : ""}${c.m?.since ? ` · member ${tenure(c.m.since)}` : ""}`)),
     chg.length > 4 ? go("memberships:m-upcoming", `+${chg.length - 4} more`) : "");
   const ready = readyForRyan();
   if (ready.length) group("n-ready", "✓", "Ready for Ryan: meal plan and protocol done", ready.length, "memberships:m-onboarding",
@@ -1578,15 +1582,17 @@ function membershipRows() {
   const ch = allChanges();
   const onboarding = allSignups().filter(s => (s.start || s.date) >= tIso || (needsChecklist(s) && s.date >= recent && (!onboardOf(s.id).review || new Date(onboardOf(s.id).review.at) >= addDays(t, -7))))
     .map(s => ({ added: s.date, name: s.client, what: s.program, type: s.offerType, weeks: programWeeks(s), start: s.start || s.date, end: programEnd(s), coach: s.coach || "", vip: !!s.vip, gym: s.account, note: s.notes || "", id: s.id, sg: s }));
-  const ending = programsEnding(-7, 30).map(({ s, end }) => ({ added: s.date, name: s.client, what: s.program, type: s.offerType, weeks: programWeeks(s), start: s.start || s.date, end, coach: s.coach || "", vip: !!s.vip, note: s.notes || "", left: daysBetween(t, parse(end)) }));
+  const loggedEnd = ch.filter(c => c.type === "program_end" && c.start >= iso(addDays(t, -7)) && c.start <= iso(addDays(t, 30)))
+    .map(c => ({ added: c.loggedOn || "", name: c.member, what: c.reason || "Program", type: "", weeks: 0, start: "", end: c.start, coach: c.m?.coach || "", note: c.notes || "", left: daysBetween(t, parse(c.start)) }));
+  const ending = [...loggedEnd, ...programsEnding(-7, 30).map(({ s, end }) => ({ added: s.date, name: s.client, what: s.program, type: s.offerType, weeks: programWeeks(s), start: s.start || s.date, end, coach: s.coach || "", vip: !!s.vip, note: s.notes || "", left: daysBetween(t, parse(end)) }))].sort((a, b) => a.end.localeCompare(b.end));
   const offboarding = ch.filter(c => c.type === "termination" && c.start >= tIso).map(c => ({ added: c.loggedOn || "", name: c.member, what: "Termination", start: c.start, end: c.start, coach: c.m?.coach || "", gym: c.m?.homeGym || "", note: c.reason || "", since: c.m?.since, left: daysBetween(t, parse(c.start)) }));
   const termNames = new Set(ch.filter(c => c.type === "termination").map(c => c.member.toLowerCase()));
   const terminated = [
     ...ch.filter(c => c.type === "termination" && c.start < tIso).map(c => ({ added: c.loggedOn || "", name: c.member, what: "Termination", start: c.start, end: c.start, coach: c.m?.coach || "", gym: c.m?.homeGym || "", note: c.reason || "", since: c.m?.since })),
     ...DATA.members.filter(m => m.status === "terminated" && !termNames.has(m.name.toLowerCase())).map(m => ({ added: m.endDate || "", name: m.name, what: "Terminated", start: m.endDate || "", end: m.endDate || "", coach: m.coach || "", gym: m.homeGym, note: "", since: m.since }))];
-  const suspNames = new Set(ch.filter(c => c.type !== "termination").map(c => c.member.toLowerCase()));
+  const suspNames = new Set(ch.filter(c => !NO_END(c.type)).map(c => c.member.toLowerCase()));
   const suspended = [
-    ...ch.filter(c => c.type !== "termination" && (!c.end || c.end >= tIso)).map(c => ({ added: c.loggedOn || "", name: c.member, what: CHANGE_TYPES[c.type], start: c.start, end: c.end, coach: c.m?.coach || "", gym: c.m?.homeGym || "", note: c.reason || "", since: c.m?.since, state: c.start > tIso ? "Upcoming" : c.end ? "Active" : "Open" })),
+    ...ch.filter(c => !NO_END(c.type) && (!c.end || c.end >= tIso)).map(c => ({ added: c.loggedOn || "", name: c.member, what: CHANGE_LABEL[c.type], start: c.start, end: c.end, coach: c.m?.coach || "", gym: c.m?.homeGym || "", note: c.reason || "", since: c.m?.since, state: c.start > tIso ? "Upcoming" : c.end ? "Active" : "Open" })),
     ...DATA.members.filter(m => m.status === "suspended" && !suspNames.has(m.name.toLowerCase())).map(m => ({ added: m.suspendedFrom || "", name: m.name, what: "Suspension", start: m.suspendedFrom || "", end: m.suspendedUntil || "", coach: m.coach || "", gym: m.homeGym, note: "", since: m.since, state: m.suspendedUntil ? "Active" : "Open" }))];
   return { onboarding, ending, offboarding, suspended, terminated };
 }
@@ -1614,7 +1620,7 @@ function viewMemberships() {
     termDate: { h: "Termination date", v: r => dayFmt(r.start) },
     program: { h: "Program", v: r => `${esc(r.what || "–")}<div class="muted" style="font-size:11.5px">${esc(r.type || "")}${r.weeks ? ` · ${r.weeks} weeks` : ""}</div>` },
     coachV: { h: "Coach", v: r => `${esc(r.coach || "–")}${r.vip ? ` <span class="vip-chip">VIP</span>` : ""}` },
-    endDate: { h: "Program ends", v: r => r.end ? dayFmt(r.end) : "–" },
+    endDate: { h: "Program ends", v: r => r.end ? (r.left < 0 ? `Program ended ${dayFmt(r.end)}` : `Program ending on ${dayFmt(r.end)}`) : "–" },
     leftEnd: { h: "Days left", num: true, v: r => r.left == null ? "–" : r.left < 0 ? `<span class="muted">ended ${-r.left}d ago</span>` : r.left },
     checklist: { h: "Onboarding checklist", v: r => !needsChecklist(r.sg) ? `<span class="muted">Gym membership, set up in Momence</span>` : (() => { const o = onboardOf(r.id), ready = o.meal && o.protocol;
       return `<div class="ob-steps">${ONBOARD_STEPS.map((st, i) => { const d = o[st.k]; const locked = st.k === "review" && !ready && !d;
@@ -1630,11 +1636,11 @@ function viewMemberships() {
     ["Onboarding finished", r => sus.filter(x => { const v = onboardOf(x.id).review; return v && inRange(iso(new Date(v.at)), r); }).length],
     ["Programs ended", r => sus.filter(x => { const e = programEnd(x); return e && inRange(e, r); }).length, { upGood: false }],
     ["Terminations", r => chs.filter(c => c.type === "termination" && inRange(c.start, r)).length, { upGood: false }],
-    ["Freezes and pauses", r => chs.filter(c => c.type !== "termination" && inRange(c.start, r)).length, { upGood: false }]]);
+    ["Pauses", r => chs.filter(c => !NO_END(c.type) && inRange(c.start, r)).length, { upGood: false }]]);
   return `
   <div class="actions">
     <button class="pill primary" type="button" data-add="signup">+ Sign-up</button>
-    <button class="pill primary" type="button" data-add="change">+ Termination / freeze / pause</button>
+    <button class="pill primary" type="button" data-add="change">+ Termination / pause</button>
     <label class="muted" style="font-size:12px;display:flex;align-items:center;gap:6px;margin-left:auto">Sort by <select id="memSort"><option value="added" ${sortBy === "added" ? "selected" : ""}>Date added (newest first)</option><option value="start" ${sortBy === "start" ? "selected" : ""}>Start date (soonest first)</option></select></label>
   </div>
   ${strip}
@@ -1650,7 +1656,7 @@ function viewMemberships() {
     <h2>Coming up, next 2 months <span class="count">${soon.length}</span></h2>
     <p class="hint">Suspensions and terminations by start date. ${soon.filter(c => parse(c.start) <= addDays(t, CHANGE_WINDOW_DAYS)).length} start in the next ${CHANGE_WINDOW_DAYS} days.</p>
     <div class="table-wrap"><table data-title="Coming up"><thead><tr><th>Starts</th><th>Member</th><th>Type</th><th>Length</th><th>Member for</th><th>Reason</th><th>Instagram</th></tr></thead><tbody>
-    ${soon.map(c => `<tr><td style="white-space:nowrap">${dayFmt(c.start)}</td><td>${esc(c.member)}</td><td><span class="type-chip type-${esc(c.type)}">${CHANGE_TYPES[c.type] || esc(c.type)}</span></td><td>${esc(changeLength(c))}</td><td>${c.m?.since ? esc(tenure(c.m.since)) : "–"}</td><td>${esc(c.reason || "")}</td><td>${igLink(c.member)}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">Nothing scheduled.</td></tr>`}
+    ${soon.map(c => `<tr><td style="white-space:nowrap">${dayFmt(c.start)}</td><td>${esc(c.member)}</td><td><span class="type-chip type-${esc(c.type)}">${CHANGE_LABEL[c.type] || esc(c.type)}</span></td><td>${esc(changeLength(c))}</td><td>${c.m?.since ? esc(tenure(c.m.since)) : "–"}</td><td>${esc(c.reason || "")}</td><td>${igLink(c.member)}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">Nothing scheduled.</td></tr>`}
     </tbody></table></div>
   </div>
   <div class="section-gap"></div>
@@ -1660,7 +1666,7 @@ function viewMemberships() {
   <div class="section-gap"></div>
   ${sec("m-termnotice", "Termination notice", "Termination notice is running (28 days for Momence memberships).", R.offboarding, [C.added, C.name, C.termDate, C.left, C.since, C.coach, C.note])}
   <div class="section-gap"></div>
-  ${sec("m-suspended", "Suspended", "Freezes, pauses and suspensions that are active or coming up.", R.suspended, [C.added, C.name, C.what, C.state, C.start, C.end, C.since, C.note])}
+  ${sec("m-suspended", "Suspended", "Pauses and suspensions that are active or coming up.", R.suspended, [C.added, C.name, C.what, C.state, C.start, C.end, C.since, C.note])}
   <div class="section-gap"></div>
   ${sec("m-terminated", "Terminated", "Memberships that have ended.", R.terminated, [C.added, C.name, C.termDate, C.since, C.coach, C.note])}`;
 }
@@ -1861,14 +1867,14 @@ function openForm(kind) {
     </form>`);
   if (kind === "change") openModal(`
     <form id="entryForm" novalidate>
-      <h2 id="modalTitle">Termination, freeze or pause</h2><p class="hint" style="margin:0">Log it when you action the email in Momence. Logged by ${esc(me)}.</p>
+      <h2 id="modalTitle">Termination, pause or program ending</h2><p class="hint" style="margin:0">Log it when you action the email in Momence. Logged by ${esc(me)}.</p>
       <div class="form-grid">
         <label>Member name *<input type="text" name="member" list="memberList" required maxlength="120" autocomplete="off"><datalist id="memberList">${DATA.members.map(m => `<option value="${esc(m.name)}"></option>`).join("")}</datalist></label>
         <label>Email (unique identifier)<input type="email" name="email" maxlength="160"></label>
-        <label>Type *<select name="type">${Object.entries(CHANGE_TYPES).map(([k, v]) => opt(k, v, "freeze")).join("")}</select></label>
-        <label>Start date *<input type="date" name="start" value="${todayIso()}" required></label>
-        <label>End date<input type="date" name="end"><span class="muted" style="font-size:11.5px">Blank = open freeze or pause. Not used for terminations.</span></label>
-        <label>Reason<input type="text" name="reason" maxlength="120" placeholder="e.g. Travel, Medical, Moving"></label>
+        <label>Type *<select name="type">${Object.entries(CHANGE_TYPES).map(([k, v]) => opt(k, v, "pause")).join("")}</select></label>
+        <label><span id="chgStartLbl">Start date *</span><input type="date" name="start" value="${todayIso()}" required></label>
+        <label id="chgEndWrap">End date<input type="date" name="end"><span class="muted" style="font-size:11.5px">Blank = open pause.</span></label>
+        <label><span id="chgReasonLbl">Reason</span><input type="text" name="reason" maxlength="120" placeholder="e.g. Travel, Medical, Moving"></label>
         <label class="full">Notes<textarea name="notes" maxlength="500"></textarea></label>
       </div>
       <div class="err" id="formErr" role="alert"></div>
@@ -1900,6 +1906,10 @@ function openForm(kind) {
       <div class="err" id="formErr" role="alert"></div>
       <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save sign-up</button></div>
     </form>`);
+  const chgType = kind === "change" ? $('#entryForm [name="type"]') : null;
+  if (chgType) { const upd = () => { const t = chgType.value; $("#chgEndWrap").classList.toggle("hidden", NO_END(t));
+      $("#chgStartLbl").textContent = t === "program_end" ? "Program ends on *" : t === "termination" ? "Termination date *" : "Start date *";
+      $("#chgReasonLbl").textContent = t === "program_end" ? "Program" : "Reason"; }; chgType.onchange = upd; upd(); }
   const vipBox = $("#fVip"), coachSel = $("#fCoach");
   if (vipBox && coachSel) vipBox.onchange = () => { if (vipBox.checked) coachSel.value = "Ryan"; coachSel.disabled = vipBox.checked; };
   $("#entryForm").addEventListener("submit", e => { e.preventDefault(); submitForm(kind, new FormData(e.target)); });
@@ -1947,7 +1957,7 @@ function submitForm(kind, fd) {
     if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return err("Enter a valid email address.");
     if (!okDate(v.start)) return err("Enter a valid start date.");
     if (!CHANGE_TYPES[v.type]) return err("Choose a type.");
-    const end = v.type === "termination" ? "" : v.end;
+    const end = NO_END(v.type) ? "" : v.end;
     if (end && (!okDate(end) || end <= v.start)) return err("The end date must be after the start date.");
     e.changes.push({ id: uid("x"), member: v.member, email: v.email.toLowerCase(), type: v.type, start: v.start, end, reason: v.reason, notes: v.notes, loggedBy: me, loggedOn: todayIso() });
   }
@@ -2002,24 +2012,24 @@ function changesCard() {
   const list = upcomingChanges(LOOKAHEAD_DAYS);
   const t = new Date(); t.setHours(0, 0, 0, 0);
   const soon = list.filter(c => parse(c.start) <= addDays(t, CHANGE_WINDOW_DAYS)).length;
-  const counts = Object.keys(CHANGE_TYPES).map(k => `${list.filter(c => c.type === k).length} ${CHANGE_TYPES[k].toLowerCase()}${k === "termination" ? "s" : "s"}`).join(" · ");
+  const counts = Object.keys(CHANGE_TYPES).map(k => `${list.filter(c => c.type === k).length} ${k === "program_end" ? "program endings" : CHANGE_TYPES[k].toLowerCase() + "s"}`).join(" · ");
   let month = "", rows = "";
   list.forEach(c => {
     const mk = parse(c.start).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
     if (mk !== month) { month = mk; rows += `<tr class="month-row"><td colspan="9">${esc(mk)}</td></tr>`; }
     const lost = changeLost(c);
     rows += `<tr><td style="white-space:nowrap">${dShort(parse(c.start))}</td><td>${esc(c.member)}${c.m ? "" : ` <span class="muted">(not matched)</span>`}</td>
-      <td><span class="type-chip type-${esc(c.type)}">${CHANGE_TYPES[c.type] || esc(c.type)}</span></td><td>${esc(changeLength(c))}</td>
+      <td><span class="type-chip type-${esc(c.type)}">${CHANGE_LABEL[c.type] || esc(c.type)}</span></td><td>${esc(changeLength(c))}</td>
       <td>${esc(ACC[c.m?.homeGym]?.short || "–")}</td><td>${c.m?.since ? esc(tenure(c.m.since)) : "–"}</td>
       <td class="num">${lost ? `${aud(lost.v)} <span class="muted">${lost.per}</span>` : "–"}</td><td>${esc(c.reason || "")}</td><td>${igLink(c.member)}</td></tr>`;
   });
   return `<div class="card" id="c-changes">
     <div class="row" style="justify-content:space-between;align-items:flex-start">
-      <div><h2>Terminations, freezes and pauses starting soon <span class="count">${list.length}</span></h2>
+      <div><h2>Terminations and pauses starting soon <span class="count">${list.length}</span></h2>
       <p class="hint">Next 2 months, grouped by month. ${soon} start in the next ${CHANGE_WINDOW_DAYS} days · ${counts}. Contact long-term members before their date.</p></div>
-      <button class="pill primary" type="button" data-add="change">+ Termination / freeze / pause</button>
+      <button class="pill primary" type="button" data-add="change">+ Termination / pause</button>
     </div>
-    <div class="table-wrap"><table data-title="Terminations, freezes and pauses"><thead><tr><th>Starts</th><th>Member</th><th>Type</th><th>Length</th><th>Home gym</th><th>Member for</th><th class="num">Lost cash flow</th><th>Reason</th><th>Instagram</th></tr></thead>
+    <div class="table-wrap"><table data-title="Terminations and pauses"><thead><tr><th>Starts</th><th>Member</th><th>Type</th><th>Length</th><th>Home gym</th><th>Member for</th><th class="num">Lost cash flow</th><th>Reason</th><th>Instagram</th></tr></thead>
     <tbody>${rows || `<tr><td colspan="9" class="empty">Nothing scheduled in the next 2 months.</td></tr>`}</tbody></table></div>
   </div>`;
 }
@@ -2168,9 +2178,9 @@ function openClient(key) {
       ${s0 ? field("Lead source", esc(s0.source || "–")) : ""}
       ${c.programs.length ? field("Program totals", `${aud(c.collected)} collected · ${c.outstanding ? `<span class="warn-text">${aud(c.outstanding)} not collected</span>` : "nothing overdue"} · ${aud(c.scheduled)} scheduled`) : ""}
     </div>
-    ${changes.length ? `<h3 class="sub-h">Terminations, freezes and pauses</h3>
+    ${changes.length ? `<h3 class="sub-h">Terminations and pauses</h3>
       <div class="table-wrap"><table><thead><tr><th>Starts</th><th>Type</th><th>Length</th><th>Reason</th><th>Logged by</th></tr></thead><tbody>
-      ${changes.map(x => `<tr><td>${day(x.start)}</td><td><span class="type-chip type-${esc(x.type)}">${CHANGE_TYPES[x.type] || esc(x.type)}</span></td><td>${esc(changeLength(x))}</td><td>${esc(x.reason || "")}</td><td>${esc(x.loggedBy || "–")}</td></tr>`).join("")}
+      ${changes.map(x => `<tr><td>${day(x.start)}</td><td><span class="type-chip type-${esc(x.type)}">${CHANGE_LABEL[x.type] || esc(x.type)}</span></td><td>${esc(changeLength(x))}</td><td>${esc(x.reason || "")}</td><td>${esc(x.loggedBy || "–")}</td></tr>`).join("")}
       </tbody></table></div>` : ""}
     ${c.programs.length ? `<h3 class="sub-h">Programs and payments</h3>
       <div class="table-wrap"><table><thead><tr><th>Program</th><th>Account</th><th>Duration</th><th>Payment</th><th class="num">Contract</th></tr></thead><tbody>
