@@ -14,7 +14,7 @@ Until a `data.json` file is added, the page shows **sample data** (marked with a
 | Notifications | Admin | The Monday meeting banner with the Google Meet link, and every item that needs action. An **orange dot** on the tab means there is something to check, or the Monday meeting is today |
 | Sales | Admin | **+ Sign-up** for Ryan and Amy. For the selected period, compared with the one before: leads, calls booked, showed up, converted, revenue from calls; sales funnel; leads by source; calls booked by month (booked, showed, no-show, rescheduled, sign-ups); conversion rate by source; payment collected from new clients by start month (with Edit to confirm the amount received); and the **Offers** list and split-payment builder |
 | Bookings | Outreach + admin | **+ New lead** and **+ Book a call** (calls are booked in GoHighLevel and reminded with GHL call reminders; they'll come in automatically once GoHighLevel is connected); period comparison; who to remind (calls in the next 48 hours); calls that need an outcome (showed, no-show, reschedule, cancelled); upcoming calls by day; recent calls; new leads |
-| Memberships | Admin | Period comparison; **Onboarding** with a checklist ticked by hand by Ryan or Amy (1 GoHighLevel tag "BBR online program", 2 Coach Vault set up with Tuesday check-ins, 3 meal plan with kcal/protein/carbs/fat and the Coach Vault name `Client name kcal-P-C-F`, 4 protocol uploaded to Coach Vault files, 5 Ryan's review: macros approved or adjusted, training program built); **Program ending** (online programs and challenges, end = start + program length in weeks); **Termination notice** (notice running), Suspended (active and upcoming freezes, pauses and suspensions), Terminated, plus everything coming up in the next 2 months. Sort by date added or start date |
+| Memberships | Admin | Period comparison; **Onboarding** with a checklist ticked by hand by Ryan or Amy (1 GoHighLevel tag "BBR online program", 2 Coach Vault set up with Tuesday check-ins, 3 meal plan with kcal/protein/carbs/fat and the Coach Vault name `Client name kcal-P-C-F`, 4 protocol uploaded to Coach Vault files, 5 Ryan's review: macros approved or adjusted, training program built); **Program ending** (online programs and challenges, end = start + program length in weeks); **Termination notice** (notice running), Suspended (active and upcoming pauses and suspensions), Terminated, plus everything coming up in the next 2 months. Sort by date added or start date |
 | Client Check-ins | Coaches + admin | Check-in form due **Tuesday 12:00 pm Perth**, 30-minute grace period to 12:30 pm; a form after that counts for the next Tuesday. **Mark received** by hand until Coach Vault is connected. Traffic lights (At risk / Watch / On track / Not set) with notes and **notes for the coach meeting with Ryan**; grid or list view; filters by coach, status and last update; period comparison |
 | Clients | Admin | Every client in one list, filter by coach (Ryan, Eva, Sage); click a client for details, payments and notes; period comparison |
 
@@ -43,7 +43,7 @@ Clicking a client opens their details:
 - Status, type, how long they've been a client, email, Instagram, home gym, cross-gym access
 - Membership, price, billing and member-since date; lost cash flow if suspended
 - Sign-up date, who closed it and the lead source
-- Terminations, freezes and pauses
+- Terminations, pauses and program endings
 - Programs, contract values and every payment (collected, not collected, scheduled)
 - **Notes:** add a note (Update, Change, Payment or Other) for changes or updates. Each note saves who wrote it and when, newest first
 
@@ -153,8 +153,8 @@ Note: Zapier's free plan (100 tasks) won't cover every Stripe transaction. Use a
   ],
   "fees": [ { "date": "2026-11-20", "gym": "claremont", "type": "late_cancel", "amount": 15, "waived": false } ],
   "adSpend": [ { "weekStart": "2026-11-16", "channel": "gyms", "amount": 380 } ],
-  "changes": [ { "id": "x1", "member": "Sam R.", "email": "sam@example.com", "type": "freeze", "start": "2026-12-01", "end": "2026-12-29", "reason": "Travel", "loggedBy": "Sheila", "loggedOn": "2026-11-23" } ],
-  "notes": [ { "id": "n1", "clientKey": "e:sam@example.com", "client": "Sam R.", "kind": "change", "text": "Asked to freeze from 1 Dec for travel. Actioned in Momence.", "by": "Sheila", "at": "2026-11-23T09:30:00+08:00" } ],
+  "changes": [ { "id": "x1", "member": "Sam R.", "email": "sam@example.com", "type": "pause", "start": "2026-12-01", "end": "2026-12-29", "reason": "Travel", "loggedBy": "Sheila", "loggedOn": "2026-11-23" } ],
+  "notes": [ { "id": "n1", "clientKey": "e:sam@example.com", "client": "Sam R.", "kind": "change", "text": "Asked to pause from 1 Dec for travel. Actioned in Momence.", "by": "Sheila", "at": "2026-11-23T09:30:00+08:00" } ],
   "funnel": [ { "weekStart": "2026-11-16", "leads": 30, "booked": 14, "showed": 11, "noShows": 2, "cancellations": 1 } ],
   "leads": [ { "id": "l1", "date": "2026-11-20", "name": "Chris P.", "contact": "@chrisp", "source": "Instagram DM", "interest": "Gym membership", "addedBy": "Outreach team", "notes": "" } ],
   "calls": [ { "id": "c1", "leadName": "Chris P.", "contact": "@chrisp", "bookedOn": "2026-11-20", "callDate": "2026-11-22", "callTime": "10:00", "status": "showed", "bookedBy": "Outreach team", "notes": "" } ],
@@ -205,4 +205,4 @@ Excluded by design: guest passes and season-pass vouchers (no revenue impact), a
 
 ## Browser-only settings
 
-Leads, calls, sign-ups, terminations/freezes/pauses and client notes entered in the demo, call status changes, product active/inactive toggles, the offer builder, the login session, filters and theme are saved in the viewer's browser (localStorage). They are not shared between people. Make permanent changes in Stripe or the data source.
+Leads, calls, sign-ups, terminations, pauses, program endings and client notes entered in the demo, call status changes, product active/inactive toggles, the offer builder, the login session, filters and theme are saved in the viewer's browser (localStorage). They are not shared between people. Make permanent changes in Stripe or the data source.
