@@ -2176,6 +2176,11 @@ function openClient(key) {
       ${lost ? field("Lost cash flow", `${aud(lost, 2)} <span class="muted">(${m.suspensionWeeks} weeks suspended)</span>`) : ""}
       ${s0 ? field("Signed up", `${day(s0.date)} · closed by ${esc(s0.closedBy || "–")}`) : ""}
       ${s0 ? field("Lead source", esc(s0.source || "–")) : ""}
+      ${s0 ? field("Program", `${esc(s0.program || "–")}<div class="muted" style="font-size:12px">${esc(s0.offerType || "")}${programWeeks(s0) ? ` · ${programWeeks(s0)} weeks` : ""}</div>`) : ""}
+      ${s0 || m?.coach ? field("Coach", `${esc(s0?.coach || m?.coach || "Not assigned")}${s0?.vip ? ` <span class="vip-chip">VIP</span>` : ""}`) : ""}
+      ${s0 ? field("Program dates", `${day(s0.start || s0.date)} to ${programEnd(s0) ? day(programEnd(s0)) : "–"}`) : ""}
+      ${s0 && needsChecklist(s0) ? field("Onboarding", (() => { const o = onboardOf(s0.id), mac = macrosOf(o); return `${ONBOARD_STEPS.filter(st => o[st.k]).length} of ${ONBOARD_STEPS.length} steps done${mac ? `<div class="muted" style="font-size:12px">${esc(macroText(mac))}</div>` : ""}`; })()) : ""}
+      ${s0?.notes ? `<div class="kv" style="grid-column:1/-1"><div class="k">Special notes</div><div class="v">${esc(s0.notes)}</div></div>` : ""}
       ${c.programs.length ? field("Program totals", `${aud(c.collected)} collected · ${c.outstanding ? `<span class="warn-text">${aud(c.outstanding)} not collected</span>` : "nothing overdue"} · ${aud(c.scheduled)} scheduled`) : ""}
     </div>
     ${changes.length ? `<h3 class="sub-h">Terminations and pauses</h3>
