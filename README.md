@@ -10,24 +10,28 @@ Until a `data.json` file is added, the page shows **sample data** (marked with a
 
 | Tab | Who | What it shows |
 | --- | --- | --- |
-| Overview | Admin | Sales collected vs. the monthly goal, recurring revenue, churn, collections due, money in vs. out, sign-ups, weekly sales by account, week-on-week and month-on-month, ROAS, and the **Reports** (revenue by account, fee income, monthly sales, payments not collected, upcoming collections, transfers, Slack and Stripe mismatches). The Week / Month / Year and account filters apply here only |
+| Overview | Admin | Sales collected vs. the monthly goal, recurring revenue, churn, collections due, money in vs. out, sign-ups, weekly sales by account, week-on-week and month-on-month, ROAS, and the **Reports** (revenue by account, fee income, monthly sales, payments not collected, upcoming collections, transfers, Slack and Stripe mismatches). The account filter applies here only |
 | Notifications | Admin | The Monday meeting banner with the Google Meet link, and every item that needs action. An **orange dot** on the tab means there is something to check, or the Monday meeting is today |
-| Sales | Admin | **+ Sign-up** for Ryan and Amy. Total leads, calls booked, showed up, converted, revenue from calls; sales funnel; leads by source; calls booked by month (booked, showed, no-show, rescheduled, sign-ups); conversion rate by source; payment collected from new clients by start month (with Edit to confirm the amount received); and the **Offers** list and split-payment builder |
-| Bookings | Outreach + admin | **+ New lead** and **+ Book a call**; who to remind (calls in the next 48 hours); calls that need an outcome (showed, no-show, reschedule, cancelled); upcoming calls by day; recent calls; new leads |
-| Memberships | Admin | Onboarding (signed up, not started), Offboarding (termination notice running), Suspended (active and upcoming freezes, pauses and suspensions), Terminated, plus everything coming up in the next 2 months. Sort by date added or start date |
-| Client Check-ins | Coaches + admin | Traffic-light health check: At risk / Watch / On track / Not set, updated by coaches; filters by coach, status and last update; check-ins due this week (weekly, on the weekday each client started) |
-| Clients | Admin | Every client in one list; click a client for details, payments and notes |
+| Sales | Admin | **+ Sign-up** for Ryan and Amy. For the selected period, compared with the one before: leads, calls booked, showed up, converted, revenue from calls; sales funnel; leads by source; calls booked by month (booked, showed, no-show, rescheduled, sign-ups); conversion rate by source; payment collected from new clients by start month (with Edit to confirm the amount received); and the **Offers** list and split-payment builder |
+| Bookings | Outreach + admin | **+ New lead** and **+ Book a call** (calls are booked in GoHighLevel and reminded with GHL call reminders; they'll come in automatically once GoHighLevel is connected); period comparison; who to remind (calls in the next 48 hours); calls that need an outcome (showed, no-show, reschedule, cancelled); upcoming calls by day; recent calls; new leads |
+| Memberships | Admin | Period comparison; **Onboarding** with a checklist ticked by hand by Ryan or Amy (1 GoHighLevel tag "BBR online program", 2 Coach Vault set up with Tuesday check-ins, 3 meal plan with kcal/protein/carbs/fat and the Coach Vault name `Client name kcal-P-C-F`, 4 protocol uploaded to Coach Vault files, 5 Ryan's review: macros approved or adjusted, training program built); **Program ending** (online programs and challenges, end = start + program length in weeks); **Termination notice** (notice running), Suspended (active and upcoming freezes, pauses and suspensions), Terminated, plus everything coming up in the next 2 months. Sort by date added or start date |
+| Client Check-ins | Coaches + admin | Check-in form due **Tuesday 12:00 pm Perth**, 30-minute grace period to 12:30 pm; a form after that counts for the next Tuesday. **Mark received** by hand until Coach Vault is connected. Traffic lights (At risk / Watch / On track / Not set) with notes and **notes for the coach meeting with Ryan**; grid or list view; filters by coach, status and last update; period comparison |
+| Clients | Admin | Every client in one list, filter by coach (Ryan, Eva, Sage); click a client for details, payments and notes; period comparison |
 
-The **USD rate** at the top (1 AUD = … USD) is the European Central Bank's daily reference rate, fetched from the free Frankfurter API (`api.frankfurter.dev`) and refreshed every 6 hours. All amounts in the dashboard are AUD.
+The **Week / Month / Year** filter shows on every tab except Notifications, and each tab compares the selected period with the one before (to the same day while the period is still running), e.g. this month vs last month.
+
+All amounts in the dashboard are AUD.
 
 ## Manual entries
 
 - **+ New lead** (Bookings): date, name, contact, source, interest, notes.
 - **+ Book a call** (Bookings): lead name (a new name is also added as a lead), call date and time, contact, source, notes. Afterwards: **Mark reminded**, record the outcome, or **Reschedule** (counts how many times a call moved).
-- **+ Sign-up** (Sales, Memberships): sign-up date, start date, client, email, Instagram, program, coach, type, account, contract value, first payment, payment type, number of instalments, closed by, lead source, notes. For instalments, Ryan or Amy enters the first payment; later payments will be matched from Stripe once it's connected.
+- **+ Sign-up** (Sales, Memberships): sign-up date, start date, client, email, Instagram, program, coach (Ryan, Eva or Sage; ticking **VIP** assigns Ryan), type (gym membership, online program, custom program or challenge), program length in weeks, account, contract value, first payment, payment type, number of instalments, closed by, lead source, special notes. For instalments, Ryan or Amy enters the first payment; later payments will be matched from Stripe once it's connected.
 - **Edit** on a new client's payment (Sales): amount received, date received, confirmed.
 - **+ Termination / freeze / pause** (Memberships).
-- **Check-in update** (Client Check-ins): click a client's light, choose On track / Watch / At risk and add a note.
+- **Check-in update** (Client Check-ins): click a client's light, choose On track / Watch / At risk, add a note and a note for the coach meeting with Ryan.
+- **Mark received** (Client Check-ins): the date and time the check-in form came in (Perth time); the dashboard works out which Tuesday it counts for.
+- **Onboarding checklist** (Memberships): click each step to tick it; the name and time are recorded. Click a ticked step to untick it.
 
 **Demo limitation:** entries are saved in the browser where they were typed (localStorage). Other people and other devices won't see them until the shared database is set up. **Export → Data file (JSON)** includes them.
 
@@ -55,10 +59,12 @@ The Notifications tab lists everything that needs action. Each group has its own
 | --- | --- | --- |
 | Payments not yet collected | Red | The client's Instagram chat (`ig.me/m/<handle>`, new tab). No handle: the "Payments not yet collected" table in Overview → Reports |
 | Clients at risk | Orange | Client Check-ins, At risk section |
+| Ready for Ryan (meal plan and protocol done, with the macros) | Green | Memberships → Onboarding |
+| Programs ending in the next 14 days | Purple | Memberships → Program ending |
 | Slack and Stripe mismatches | Magenta | The Slack post (`slackPosts[].permalink`) or the Stripe payment. No link: the mismatches table in Overview → Reports |
 | Transfers between accounts | Green | "Transfers waiting" in Overview → Reports |
 | Upcoming collections | Blue | "Upcoming collections" in Overview → Reports |
-| Terminations, freezes and pauses starting in the next 14 days | Purple | Memberships (Offboarding or Suspended) |
+| Terminations, freezes and pauses starting in the next 14 days | Purple | Memberships (Termination notice or Suspended) |
 | Offers needing details | Amber | Sales → Offers, filtered to "Needs details" |
 
 Slack messages will appear here once Slack is connected.
@@ -166,9 +172,11 @@ Field notes:
 - `stripeUrl` (optional): link to the payment in Stripe. If missing, a `pi_`, `ch_` or `in_` id is turned into a Stripe dashboard link. `slackPosts[].permalink` links to the Slack post.
 - `changes[].type`: `termination`, `freeze` or `pause`. `end` is blank for terminations and for open freezes or pauses. Matched to `members[]` by `email`, then by name; add `email` to members for a reliable match.
 - `calls[]`: also `source`, `rescheduled` (times moved), `reminded` (true once the lead was reminded), `remindedBy`, `remindedAt`.
-- `signups[]`: also `start` (start date), `coach`, `instalments` (number), `confirmed` (first payment checked), `received` (date received).
-- `pulse[]`: check-in updates, `{ "clientKey", "client", "status": "on_track" | "watch" | "at_risk", "note", "at", "by" }`. The newest per client counts.
+- `signups[]`: also `start` (start date), `coach`, `vip`, `weeks` (program length; otherwise read from a name like "12-Week …"), `instalments` (number), `confirmed` (first payment checked), `received` (date received).
+- `pulse[]`: check-in updates, `{ "clientKey", "client", "status": "on_track" | "watch" | "at_risk", "note", "meetingNote", "at", "by" }`. The newest per client counts.
 - `members[]`: also `coach`, `suspendedFrom`, `suspendedUntil`, `endDate`. Client Check-ins includes clients who have a coach and an active membership, or a program that started in the last 6 months (until program end dates come from Coach Vault).
+- `onboard{}` (optional): onboarding checklist by sign-up id, e.g. `{ "s12": { "ghl": { "at", "by" }, "meal": { "kcal", "p", "c", "f", "at", "by" }, "review": { "outcome": "approved" | "adjusted", "built": true, "at", "by" } } }`.
+- `checkins[]` (optional, later from Coach Vault): forms received, `{ "clientKey", "client", "tuesday": "YYYY-MM-DD", "receivedAt": "YYYY-MM-DDTHH:MM" (Perth), "by" }`.
 - `notes[]`: client notes. `clientKey` is `e:` + the client's email (or `n:` + their name in lower case when there's no email); `kind` is `update`, `change`, `payment` or `other`.
 - `members[].status`: `active`, `suspended`, `terminated` or `free`. Lost cash flow = `suspensionWeeks` ÷ 2 × fortnightly `price`; upfront payers count as no loss.
 - `fees[].type`: `late_cancel` ($15, within 8 hours of class) or `no_show` ($30). Set `waived: true` for waived or refunded fees.
@@ -181,10 +189,10 @@ Excluded by design: guest passes and season-pass vouchers (no revenue impact), a
 
 ## Still to confirm before going live
 
-- Booking calendar to connect (GoHighLevel, Calendly or Google Calendar) for upcoming calls
+- GoHighLevel connection for booked calls and call reminders
 - Stripe access, then Zapier to fill the sales sheet; instalments after the first matched from Stripe
-- Coach Vault connection for check-in dates and program end dates
-- Coach names (coaches use the coach access code)
+- Coach Vault connection for check-in forms received and program end dates
+- Slack automation for "Ready for Ryan" (meal plan and protocol done, with the macros)
 
 - Student GFM price and family pricing
 - Online offer catalogue (Ryan and Gene)
