@@ -25,7 +25,7 @@ All amounts in the dashboard are AUD.
 ## Manual entries
 
 - **+ New lead** (Bookings): date, name, contact, source, interest, notes.
-- **+ Book a call** (Bookings): lead name (a new name is also added as a lead), call date and time, contact, source, notes. Afterwards: **Mark reminded**, record the outcome, or **Reschedule** (counts how many times a call moved).
+- **+ Book a call** (Bookings): lead name (a new name is also added as a lead), call date and time, contact, source, notes. Afterwards: **Mark reminded** (for manual DM reminders; GoHighLevel's automatic reminders still go out), **No-show** or **Signed up** beside each booked call, or **Reschedule** (counts how many times a call moved). Past calls still marked Booked also get Showed and Cancelled. When Ryan or Amy (admin) clicks **Signed up**, the sign-up form opens with the lead's name, Instagram and source filled in; a call marked Signed up with no sign-up entered shows in Notifications.
 - **+ Sign-up** (Sales, Memberships): sign-up date, start date, client, email, Instagram, program, coach (Ryan, Eva or Sage; ticking **VIP** assigns Ryan), type (gym membership, online program, custom program or challenge), program length in weeks, account, contract value, first payment, payment type, number of instalments, closed by, lead source, special notes. For instalments, Ryan or Amy enters the first payment; later payments will be matched from Stripe once it's connected.
 - **Edit** on a new client's payment (Sales): amount received, date received, confirmed.
 - **+ Termination / pause** (Memberships): termination, pause or program ending (the date the program ends, shown as "Program ending on [date]").

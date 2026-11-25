@@ -177,6 +177,7 @@ tbody tr:hover { background: var(--wash); }
 .ck-ok { color: var(--good-text); } .ck-miss { color: var(--n-risk); }
 .light.sm { width: 16px; height: 16px; }
 #view td .mini-btn, .pc-ck .mini-btn { white-space: nowrap; }
+.out-btns { flex-wrap: wrap; } .mini-btn.out-signed { border-color: var(--n-transfer); color: var(--n-transfer); }
 td.wrap-cell { white-space: normal; min-width: 160px; max-width: 280px; font-size: 12.5px; }
 .type-chip { display: inline-block; font-size: 11.5px; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
 .type-termination { color: var(--n-payment); } .type-open { color: var(--muted); } .type-freeze { color: var(--n-upcoming); } .type-pause { color: var(--n-change); } .type-program_end { color: var(--ink-2); }
@@ -1201,6 +1202,11 @@ function notifGroups() {
   if (chg.length) group("n-change", "‖", `Terminations, pauses and program endings, next ${CHANGE_WINDOW_DAYS} days`, chg.length, "memberships:m-upcoming",
     chg.slice(0, 4).map(c => c.type === "program_end" ? go("memberships:m-ending", `${esc(c.member)} · <strong>Program ending on ${dShort(parse(c.start))}</strong>`) : go(c.type === "termination" ? "memberships:m-termnotice" : "memberships:m-suspended", `${esc(c.member)} · <strong>${CHANGE_LABEL[c.type] || esc(c.type)}</strong> from ${dShort(parse(c.start))}${c.type !== "termination" ? ` · ${esc(changeLength(c))}` : ""}${c.m?.since ? ` · member ${tenure(c.m.since)}` : ""}`)),
     chg.length > 4 ? go("memberships:m-upcoming", `+${chg.length - 4} more`) : "");
+  const back30 = iso(addDays(today0(), -30)), suNames = new Set(allSignups().map(x => String(x.client || "").toLowerCase()));
+  const noEntry = allCalls().filter(c => c.status === "closed" && (c.callDate || "") >= back30 && !suNames.has(String(c.leadName || "").toLowerCase()));
+  if (noEntry.length) group("n-offer", "+", "Signed up on a call, sign-up not entered yet", noEntry.length, "bookings:b-recent",
+    noEntry.slice(0, 4).map(c => go("bookings:b-recent", `${esc(c.leadName)} · call ${dShort(parse(c.callDate))}${c.outcomeBy ? ` · marked by ${esc(c.outcomeBy)}` : ""}`)),
+    noEntry.length > 4 ? go("bookings:b-recent", `+${noEntry.length - 4} more`) : "");
   const ready = readyForRyan();
   if (ready.length) group("n-ready", "✓", "Ready for Ryan: meal plan and protocol done", ready.length, "memberships:m-onboarding",
     ready.slice(0, 4).map(s => go("memberships:m-onboarding", `${esc(s.client)} · ${esc(macroText(onboardOf(s.id).meal))}${s.coach ? ` · ${esc(s.coach)}` : ""}`)),
@@ -1347,6 +1353,9 @@ function viewSales() {
 
 /* ---------- Bookings (outreach) ---------- */
 function callWhen(c) { return c.callDate ? `${dayFmt(c.callDate)}${c.callTime ? " · " + esc(c.callTime) : ""}` : "–"; }
+const outcomeBtns = (c, list) => `<div class="row out-btns" style="gap:6px">${list.map(k => k === "resched"
+  ? `<button type="button" class="mini-btn" data-resched="${esc(c.id)}">Reschedule</button>`
+  : `<button type="button" class="mini-btn ${k === "closed" ? "out-signed" : ""}" data-outcome="${k}" data-id="${esc(c.id)}">${{ showed: "Showed", no_show: "No-show", closed: "Signed up", cancelled: "Cancelled" }[k]}</button>`).join("")}</div>`;
 function callStatusSelect(c) {
   return `<select data-callstatus="${esc(c.id)}" aria-label="Status for ${esc(c.leadName)}">${Object.entries(CALL_STATUS).map(([k, v]) => `<option value="${k}" ${k === c.status ? "selected" : ""}>${v}</option>`).join("")}</select>`;
 }
@@ -1384,7 +1393,7 @@ function viewBookings() {
   <div class="grid g-2e">
     <div class="card" id="b-remind">
       <h2>Who to remind <span class="count">${remind.length}</span></h2>
-      <p class="hint">Calls in the next 48 hours. Send the GoHighLevel call reminder, then mark them reminded.</p>
+      <p class="hint">Calls in the next 48 hours. Send a DM reminder, then mark them reminded. GoHighLevel's automatic reminders still go out.</p>
       <div class="table-wrap"><table data-title="Who to remind"><thead><tr><th>Call</th><th>Lead</th><th>Contact</th><th>Booked by</th><th class="no-print"></th></tr></thead><tbody>
       ${remind.map(c => `<tr><td style="white-space:nowrap">${callWhen(c)}</td><td>${esc(c.leadName)}</td><td>${contact(c)}</td><td>${esc(c.bookedBy || "–")}</td><td class="no-print"><button type="button" class="btn" data-remind="${esc(c.id)}">Mark reminded</button></td></tr>`).join("")
         || `<tr><td colspan="5" class="empty">Nobody to remind right now.</td></tr>`}
@@ -1392,13 +1401,9 @@ function viewBookings() {
     </div>
     <div class="card" id="b-outcome">
       <h2>Need an outcome <span class="count">${outcome.length}</span></h2>
-      <p class="hint">The call date has passed. Record what happened.</p>
+      <p class="hint">The call date has passed. Record what happened. Signed up opens the sign-up form for Ryan or Amy.</p>
       <div class="table-wrap"><table data-title="Need an outcome"><thead><tr><th>Call</th><th>Lead</th><th class="no-print">Outcome</th></tr></thead><tbody>
-      ${outcome.slice(0, 30).map(c => `<tr><td style="white-space:nowrap">${callWhen(c)}</td><td>${esc(c.leadName)}</td><td class="no-print"><div class="row" style="gap:6px">
-        <button type="button" class="mini-btn" data-outcome="showed" data-id="${esc(c.id)}">Showed</button>
-        <button type="button" class="mini-btn" data-outcome="no_show" data-id="${esc(c.id)}">No-show</button>
-        <button type="button" class="mini-btn" data-resched="${esc(c.id)}">Reschedule</button>
-        <button type="button" class="mini-btn" data-outcome="cancelled" data-id="${esc(c.id)}">Cancelled</button></div></td></tr>`).join("")
+      ${outcome.slice(0, 30).map(c => `<tr><td style="white-space:nowrap">${callWhen(c)}</td><td>${esc(c.leadName)}</td><td class="no-print">${outcomeBtns(c, ["showed", "no_show", "closed", "resched", "cancelled"])}</td></tr>`).join("")
         || `<tr><td colspan="3" class="empty">All past calls have an outcome.</td></tr>`}
       </tbody></table></div>
     </div>
@@ -1408,17 +1413,17 @@ function viewBookings() {
     <h2>Upcoming calls <span class="count">${upcoming.length}</span></h2>
     <p class="hint">Next 14 days, by day. Calls are booked in GoHighLevel and will show here once it's connected. Until then, add them with + Book a call.</p>
     ${upcoming.length ? `<div class="table-wrap"><table class="up-calls" data-title="Upcoming calls">
-      <colgroup><col style="width:9%"><col style="width:20%"><col style="width:22%"><col style="width:19%"><col style="width:18%"><col style="width:12%"></colgroup>
+      <colgroup><col style="width:8%"><col style="width:17%"><col style="width:18%"><col style="width:13%"><col style="width:16%"><col style="width:28%"></colgroup>
       <thead><tr><th>Time</th><th>Lead</th><th>Contact</th><th>Source</th><th>Reminder</th><th class="no-print"></th></tr></thead>
       ${Object.keys(byDay).map(d => `<tbody><tr class="day-row"><th colspan="6" scope="colgroup">${d === tIso ? "Today · " : ""}${parse(d).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}</th></tr>
         ${byDay[d].map(c => `<tr><td>${esc(c.callTime || "–")}</td><td>${esc(c.leadName)}</td><td>${contact(c)}</td><td>${esc(sourceOf(c))}</td>
         <td>${c.reminded ? "✓ Reminded" : `<span class="muted">Not reminded</span>`}${c.rescheduled ? ` <span class="muted">· moved ${c.rescheduled}×</span>` : ""}</td>
-        <td class="no-print" style="text-align:right"><button type="button" class="mini-btn" data-resched="${esc(c.id)}">Reschedule</button></td></tr>`).join("")}</tbody>`).join("")}
+        <td class="no-print">${outcomeBtns(c, ["no_show", "closed", "resched"])}</td></tr>`).join("")}</tbody>`).join("")}
     </table></div>` : ""}
     ${upcoming.length ? "" : `<div class="empty">No calls booked in the next 14 days. Use "+ Book a call".</div>`}
   </div>
   <div class="section-gap"></div>
-  <div class="card">
+  <div class="card" id="b-recent">
     <h2>Recent calls <span class="count">${recent.length}</span></h2>
     <p class="hint">Last 30 days. Change the status if it was recorded wrongly.</p>
     <div class="table-wrap"><table data-title="Recent calls"><thead><tr><th>Call</th><th>Lead</th><th>Source</th><th>Booked by</th><th>Status</th><th class="no-print"></th></tr></thead><tbody>
@@ -1835,7 +1840,7 @@ function leadOptions() {
   return allLeads().slice().reverse().filter(l => { const k = l.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 300)
     .map(l => `<option value="${esc(l.name)}"></option>`).join("");
 }
-function openForm(kind) {
+function openForm(kind, prefill = {}) {
   const me = state.user.name;
   if (kind === "lead") openModal(`
     <form id="entryForm" novalidate>
@@ -1906,6 +1911,7 @@ function openForm(kind) {
       <div class="err" id="formErr" role="alert"></div>
       <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save sign-up</button></div>
     </form>`);
+  const pf = $("#entryForm"); if (pf) Object.entries(prefill).forEach(([k, v]) => { const el = pf.elements[k]; if (el && v) { if (el.tagName === "SELECT" && ![...el.options].some(o => o.value === v)) return; el.value = v; } });
   const chgType = kind === "change" ? $('#entryForm [name="type"]') : null;
   if (chgType) { const upd = () => { const t = chgType.value; $("#chgEndWrap").classList.toggle("hidden", NO_END(t));
       $("#chgStartLbl").textContent = t === "program_end" ? "Program ends on *" : t === "termination" ? "Termination date *" : "Start date *";
@@ -2484,7 +2490,11 @@ function bindEntries() {
     <div class="row" style="justify-content:flex-end"><button class="btn primary" type="button" data-close>OK</button></div>`));
   document.querySelectorAll("[data-add]").forEach(b => b.onclick = () => openForm(b.dataset.add));
   document.querySelectorAll("#view [data-remind]").forEach(b => b.onclick = () => editCall(b.dataset.remind, { reminded: true, remindedBy: state.user.name, remindedAt: new Date().toISOString() }));
-  document.querySelectorAll("#view [data-outcome]").forEach(b => b.onclick = () => editCall(b.dataset.id, { status: b.dataset.outcome }));
+  document.querySelectorAll("#view [data-outcome]").forEach(b => b.onclick = () => {
+    const id = b.dataset.id, st = b.dataset.outcome, c = allCalls().find(x => x.id === id);
+    editCall(id, { status: st, outcomeBy: state.user.name, outcomeAt: new Date().toISOString() });
+    if (st === "closed" && isAdmin() && c) openForm("signup", { client: c.leadName, instagram: /^@/.test(c.contact || "") ? c.contact : "", source: c.source || "" });
+  });
   document.querySelectorAll("#view [data-resched]").forEach(b => b.onclick = () => openReschedule(b.dataset.resched));
   document.querySelectorAll("#view [data-editpay]").forEach(b => b.onclick = () => openPayEdit(b.dataset.editpay));
   document.querySelectorAll("#view [data-pulse]").forEach(b => b.onclick = () => openPulse(b.dataset.pulse));
